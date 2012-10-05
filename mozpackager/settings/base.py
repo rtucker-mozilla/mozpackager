@@ -2,6 +2,8 @@
 # repo. If you need to override a setting locally, use settings_local.py
 
 from funfactory.settings_base import *
+import djcelery
+djcelery.setup_loader()
 
 # Name of the top-level module where you put all your apps.
 # If you did not install Playdoh with the funfactory installer script
@@ -16,7 +18,8 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     # Application base, containing global templates.
     '%s.base' % PROJECT_MODULE,
     # Example code. Can (and should) be removed for actual projects.
-    '%s.examples' % PROJECT_MODULE,
+    'djkombu',
+    'djcelery',
 ]
 
 LOCALE_PATHS = (
@@ -78,3 +81,8 @@ DOMAIN_METHODS['messages'] = [
 # ]
 
 LOGGING = dict(loggers=dict(playdoh = {'level': logging.DEBUG}))
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = (
+    '/Users/rtucker/mozpackager/mozpackager/site_media',
+)

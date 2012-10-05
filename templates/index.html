@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<div class="row">
+  <div class="twelve columns">
+        <div class="row">
+            <div class="seven columns">
+                &nbsp;
+            </div>
+            <div class="five columns">
+                <div class="row collapse">
+                    <form method="post" action=".">
+                        <div class="eight mobile-three columns">
+                            <input name="search" value ="{{ search }}" type="text" />
+                            {% if search %}
+                            <label>Delete search and submit to clear.</label>
+                            {% endif %}
+                        </div>
+                        <div class="four mobile-one columns">
+                            <!--<a href="#" class="postfix button expand">Search</a>-->
+                            <input type="submit" class="postfix button expand" value="Search" />
+                        </div>
+                    {# csrf_token #}
+                    </form>
+                </div>
+            </div>
+        </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block extra_footer %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#whiskey_table").tablesorter();
+    });
+</script>
+{% endblock %}

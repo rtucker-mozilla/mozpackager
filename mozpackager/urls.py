@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.conf.urls.defaults import patterns, include
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.views.generic.simple import direct_to_template
 
 from .examples import urls
 
@@ -13,7 +14,8 @@ patch()
 
 urlpatterns = patterns('',
     # Example:
-    (r'', include(urls)),
+    #(r'', include(urls)),
+    (r'', direct_to_template, {'template': 'index.html'}),
     
     # Generate a robots.txt
     (r'^robots\.txt$', 
