@@ -2,8 +2,6 @@
 # repo. If you need to override a setting locally, use settings_local.py
 
 from funfactory.settings_base import *
-import djcelery
-djcelery.setup_loader()
 
 # Name of the top-level module where you put all your apps.
 # If you did not install Playdoh with the funfactory installer script
@@ -18,9 +16,12 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     # Application base, containing global templates.
     '%s.base' % PROJECT_MODULE,
     # Example code. Can (and should) be removed for actual projects.
-    'djkombu',
+    'djkombu.transport',
     'djcelery',
 ]
+import djcelery
+djcelery.setup_loader()
+BROKER_URL = "django://"
 
 LOCALE_PATHS = (
     os.path.join(ROOT, PROJECT_MODULE, 'locale'),

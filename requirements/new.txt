@@ -1,0 +1,46 @@
+Babel==0.9.6
+Django==1.4
+GitPython==0.1.7
+Jinja2==2.5.5
+MySQL-python==1.2.3c1
+Pygments==1.5
+Sphinx==1.0.7
+amqplib==1.0.2
+anyjson==0.3.3
+billiard==2.7.3.17
+-e git://github.com/jsocol/bleach.git@a938a168bac9136c35faeee01765d3475619d07a#egg=bleach-dev
+cef==0.3
+celery==3.0.11
+certifi==0.0.8
+chardet==2.1.1
+-e git://github.com/jsocol/commonware.git@1b2e7623782c7aaca5401714758845cf9fcee621#egg=commonware-dev
+django-browserid==0.5.1
+django-celery==3.0.10
+-e git://github.com/jsocol/django-cronjobs.git@cfda8176c5c3a50d1b58fcf57e87e23c467789bd#egg=django_cronjobs-dev
+django-kombu==0.9.4
+-e git://github.com/jbalogh/django-mobility@644e0c1c58ce6a57d93043d39f2d3d65236fe04c#egg=django_mobility-dev
+-e git://github.com/fwenzel/django-mozilla-product-details@36ef06539d6b34c4f345fd0d3e16937d0db9a752#egg=django_mozilla_product_details-dev
+-e git://github.com/jbalogh/django-multidb-router.git@7e608639f990ba715169169657da91de5f27b4ca#egg=django_multidb_router-dev
+-e git://github.com/jbalogh/django-nose.git@7fd0132090256e752119f90a3d4568203c486f2e#egg=django_nose-dev
+-e git://github.com/mozilla/django-session-csrf.git@94e2858a427a6b278e41c051643f3c226f096f21#egg=django_session_csrf-dev
+-e git://github.com/fwenzel/django-sha2.git@f4519bf0cc9b1dd7a7d78394fa4aec4504bc86e9#egg=django_sha2-dev
+docutils==0.9.1
+-e git://github.com/mozilla/happyforms.git@729612c2a824a7e8283d416d2084bf506c671e24#egg=happyforms-dev
+html5lib==0.95
+-e git://github.com/jbalogh/jingo.git@1dc0e0bf4a0118ef53adc6967537a511152a040a#egg=jingo-dev
+-e git://github.com/jsocol/jingo-minify.git@d2ffefbd31e5035873083107e86893be302ce452#egg=jingo_minify-dev
+kombu==2.4.7
+mock==0.7.2
+nose==1.0.0
+-e git://github.com/mozilla/nuggets.git@96e80a64aa4bfcfef4f43fc3ab6966450ccd7325#egg=nuggets-dev
+oauthlib==0.1.3
+py-bcrypt==0.2
+pyasn1==0.1.4
+python-dateutil==1.5
+pytz==2012f
+requests==0.13.0
+rsa==3.1.1
+-e git://github.com/jbalogh/test-utils.git@3c2214d193d1b0c0d74c77b3731c8afb0173e669#egg=test_utils-dev
+-e git://github.com/clouserw/tower.git@7711557f55fefa9526402b2731879edf9b128381#egg=tower-dev
+translate-toolkit==1.8.0
+wsgiref==0.1.2

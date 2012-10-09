@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.conf.urls.defaults import patterns, include
+from django.conf.urls.defaults import patterns, include, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic.simple import direct_to_template
 
@@ -15,7 +15,9 @@ patch()
 urlpatterns = patterns('',
     # Example:
     #(r'', include(urls)),
-    (r'', direct_to_template, {'template': 'index.html'}),
+    #(r'', direct_to_template, {'template': 'index.html'}),
+    url(r'upload', 'mozpackager.frontend.views.upload', name='frontend.upload'),
+    url(r'task', 'mozpackager.frontend.views.task_test', name='frontend.task_test'),
     
     # Generate a robots.txt
     (r'^robots\.txt$', 
