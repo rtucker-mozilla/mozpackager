@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<style type='text/css'>
+    dl {
+        padding-left: 10px;
+        margin-bottom: 1px;
+
+    }
+
+
+</style>
+
+
+<div class="row">
+  <div class="twelve columns">
+        <div class="row">
+            <div class="twelve columns">
+                <dl>
+                    <dt>Package information for: {{ package.package }}</dt>
+                        <dl>Created On: {{ package.created_on }}</dl>
+                        {% if package.build_package_name %}
+                        <dl>Build File <a href="{{'frontend.download'|url(package.id) }}">{{ package.build_package_name }}</a></dl>
+                        {% endif %}
+                        <dl>Architecture: {{ package.arch_type }}</dl>
+
+                        <dl>Package Version: {% if package.package_version %}{{ package.package_version }} {% else %}Latest{% endif %}</dl>
+                        <dl>Build Status: {{ package.build_status }}</dl>
+                        <dl>Input Type: {{ package.input_type }}</dl>
+                </dl>
+                {% if dependencies %}
+                    <dl>
+                        <dt>Dependencies</dt>
+                            {% for dep in dependencies %}
+                                <dl>{{ dep }}</dl>
+                            {% endfor %}
+                    </dl>
+                {% endif %}
+                <h3>Build Logs</h3>
+                {% for entry in package.mozillapackagelog_set.all() %}
+                <dl>
+                    <dt>{{ entry.log_type}}</dt>
+                    <dl>{{ entry.log_message_to_html|safe }}</dl>
+                </dl>
+
+                {% endfor %}
+            </div>
+        </div>
+  </div>
+</form>
+</div>
+
+{% endblock %}
+{% block extra_footer %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#package_table").tablesorter();
+    });
+</script>
+{% endblock %}

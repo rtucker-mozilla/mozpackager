@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block content %}
+<style type='text/css'>
+    #id_upload_package, label[for=upload_package] {
+        display: none;
+    }
+    #id_rhel_version, label[for=rhel_version] {
+        display: none;
+    }
+    label {
+        margin-top: 5px;
+        width: 100%;
+    }
+   select {
+        background: transparent;
+        width: 268px;
+        padding: 5px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        height: 34px;
+    }
+
+
+</style>
+
+
+<div class="row">
+<form id="form" class='custom' enctype="multipart/form-data" method='post' action=''>
+    {% if form.errors %}
+        <div class="alert-box [success alert secondary]">
+            {% for field in form %}
+            <div>{{ field.errors|striptags() }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+  <div class="twelve columns">
+        <div class="row">
+            <div class="six columns">
+                    {{ form.arch_type.label_tag() }}
+                    {{ form.arch_type }}
+                    {{ form.output_type.label_tag() }}
+                    {{ form.output_type }}
+
+                    <label data-bind="visible: isRHEL" id='rhel_version_label' style='display: none;' for='id_rhel_version'>RHEL Version</label>
+                    {{ form.rhel_version }}
+
+                    {{ form.input_type.label_tag() }}
+                    {{ form.input_type }}
+                    <label  id='package_label' for='id_package'>Remote Package</label>
+                    {{ form.package }}
+                    <label  id='upload_package_label' for='id_upload_package'>Upload Package</label>
+                    {{ form.upload_package }}
+                    <br />
+                    <br />
+
+                
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                    <input type="submit" class="postfix button" value="Create" />
+            </div>
+            <div class="six columns">
+                <div class="row collapse">
+                    <dl class="tabs">
+                    <dd class="active"><a href="#buildoptions">Build Options</a></dd>
+                    <dd><a href="#dependencies">Dependencies</a></dd>
+                    <dd><a href="#packageoptions">Package Options</a></dd>
+                    </dl>
+
+                    <ul class="tabs-content">
+                    <li class="active" id="buildoptionsTab">
+                    <span class="has-tip" data-width="210" title="What will the package name be for the output file">
+                        {{ form.install_package_name.label_tag() }}
+                        {{ form.install_package_name }}
+                    </span>
+                    <span class="has-tip" data-width="210" title="Package version">
+                        {{ form.package_version.label_tag() }}
+                        {{ form.package_version }}
+                    </span>
+                    <span class="has-tip" data-width="210" title="Where should the package be installed">
+                        {{ form.prefix_dir.label_tag() }}
+                        {{ form.prefix_dir }}
+                    </span>
+                    <span class="has-tip" data-width="210" title="Which application group">
+                        {{ form.application_group.label_tag() }}
+                    </span>
+                        {{ form.application_group }}
+                    </li>
+                    <li id="dependenciesTab">
+                            <div id='dependency_template'>
+                            </div>
+                        <br style="clear: both;">
+                        <input id='add_dependency_button' style='float: left;' type='button' class="postfix button" value='Add Dependency'>
+                    </li>
+                    <li id="packageoptionsTab">
+                    <span class="has-tip" data-width="210" title="{{ form.conflicts.help_text }}">
+                        {{ form.conflicts.label_tag() }}
+                        {{ form.conflicts }}
+                    </span>
+                    <span class="has-tip" data-width="210" title="{{ form.provides.help_text }}">
+                        {{ form.provides.label_tag() }}
+                        {{ form.provides }}
+                    </span>
+                    <span class="has-tip" data-width="210" title="{{ form.package_url.help_text }}">
+                        {{ form.package_url.label_tag() }}
+                        {{ form.package_url }}
+                    </span>
+                    </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+  </div>
+</form>
+</div>
+
+{% endblock %}
+{% block extra_footer %}
+<script type="text/javascript">
+        $(document).foundationTabs();
+        function init(){
+                    jQuery("#id_rhel_version").show();
+                    jQuery("#rhel_version_label").show();
+                    jQuery("#id_upload_package").hide();
+                    jQuery("#upload_package_label").hide();
+                    //$("#id_install_package_name").attr('disabled', 'disabled');
+        }
+        function add_dependency(){
+           $("#dependency_template").append('<div style="clear: both;"><label>Dependency:</label>');
+           $("#dependency_template").append('<input style="width: 300px; float: left;" type="text" name="dependency" /><input class="remove_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />');
+           $("#dependency_template").append('</div>');
+        }
+        $(document).ready(function(){
+
+            init();
+            $("#id_output_type").change(function(){
+                var output_type = $(this).val();
+                if(output_type == 'rpm'){
+                    jQuery("#id_rhel_version").show();
+                    jQuery("#rhel_version_label").show();
+                    return true;
+                } else {
+                    jQuery("#rhel_version_label").hide();
+                    jQuery("#id_rhel_version").hide();
+                    return false;
+                }
+
+            });
+            $("#id_input_type").change(function(){
+                var input_type = $(this).val();
+                if(input_type == 'python' || input_type == 'gem'){
+                    jQuery("#id_upload_package").hide();
+                    jQuery("#upload_package_label").hide();
+                    jQuery("#id_package").show();
+                    jQuery("#package_label").show();
+                    //$("#id_install_package_name").attr('disabled', 'disabled');
+                    $("#id_upload_package").rules("remove", "required");
+                    $("#id_package").rules("add", "required");
+                    validator.resetForm();
+                    return false;
+                } else {
+                    $("#id_package").val('');
+                    $("#id_install_package_name").val('');
+                    jQuery("#id_package").hide();
+                    jQuery("#package_label").hide();
+                    jQuery("#id_upload_package").show();
+                    jQuery("#upload_package_label").show();
+                    //$("#id_install_package_name").removeAttr('disabled');
+                    $("#id_upload_package").rules("add", "required");
+                    $("#id_package").rules("remove", "required");
+                    validator.resetForm();
+                    return true;
+                }
+            });
+            $("#id_package").keyup(function(){
+                var input_type = $("#id_input_type").val();
+                if(input_type == 'python' || input_type == 'gem'){
+                    $("#id_install_package_name").val($(this).val());
+                }
+            });
+            $("#id_package").change(function(){
+                var input_type = $("#id_input_type").val();
+                if(input_type == 'python' || input_type == 'gem'){
+                    $("#id_install_package_name").val($(this).val());
+                }
+            });
+            /*
+             * We need a document "live" event handler here
+             * The .remove_dependency buttons are created after the
+             * entire dom is created/loaded
+             */
+
+            $(document).on("click", ".remove_dependency", function(){
+                    $(this).prev().prev().remove();
+                    $(this).prev().remove();
+                    $(this).remove();
+            });
+
+            $("#add_dependency_button").click(function(){
+                    add_dependency();
+            });
+
+            $("#id_upload_package").change(function(){
+                var input_type = $("#id_input_type").val();
+                var full_package_name = $(this).val()
+                if(input_type == 'rpm'){
+                    var final_package_name = full_package_name.split(/-/)[0]
+                }
+                if(input_type == 'deb'){
+                    var final_package_name = full_package_name.split(/_/)[0]
+                }
+                $("#id_install_package_name").val(final_package_name);
+
+            });
+            var validator = $("#form").validate({
+                submitHandler: function(form) {
+                    form.submit();
+                },
+                messages : {
+                    package: 'The Package Name Required',
+                },
+                rules: {
+                    install_package_name: {
+                        required: true
+                    },
+                    id_package: {
+                        required: true
+                    }
+                }
+    
+            });
+
+
+        });
+</script>
+{% endblock %}

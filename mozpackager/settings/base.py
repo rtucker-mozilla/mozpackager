@@ -16,6 +16,8 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     # Application base, containing global templates.
     '%s.base' % PROJECT_MODULE,
     # Example code. Can (and should) be removed for actual projects.
+    '%s.frontend' % PROJECT_MODULE,
+
     'djkombu.transport',
     'djcelery',
 ]
@@ -42,8 +44,8 @@ AUTHENTICATION_BACKENDS = [
 
 SITE_URL = 'http://127.0.0.1:8000'
 LOGIN_URL = '/'
-LOGIN_REDIRECT_URL = 'examples.home'
-LOGIN_REDIRECT_URL_FAILURE = 'examples.home'
+#LOGIN_REDIRECT_URL = 'examples.home'
+#LOGIN_REDIRECT_URL_FAILURE = 'examples.home'
 
 TEMPLATE_CONTEXT_PROCESSORS = list(TEMPLATE_CONTEXT_PROCESSORS) + [
     'django_browserid.context_processors.browserid_form',
@@ -85,5 +87,19 @@ LOGGING = dict(loggers=dict(playdoh = {'level': logging.DEBUG}))
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
-    '/Users/rtucker/mozpackager/mozpackager/site_media',
+    './site_media',
 )
+FILE_UPLOAD_MAX_MEMORY_SIZE = 1
+def jinja_url(view_name, *args, **kwargs):
+    from django.core.urlresolvers import reverse, NoReverseMatch
+    try:
+        return reverse(view_name, args=args, kwargs=kwargs)
+    except NoReverseMatch:
+        try:
+            project_name = settings.SETTINGS_MODULE.split('.')[0]
+            return reverse(project_name + '.' + view_name,
+                           args=args, kwargs=kwargs)
+        except NoReverseMatch:
+            return ''
+import jinja2
+jinja2.filters.FILTERS['url'] = jinja_url

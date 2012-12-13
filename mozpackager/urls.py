@@ -3,7 +3,6 @@ from django.conf.urls.defaults import patterns, include, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic.simple import direct_to_template
 
-from .examples import urls
 
 from funfactory.monkeypatches import patch
 patch()
@@ -16,8 +15,13 @@ urlpatterns = patterns('',
     # Example:
     #(r'', include(urls)),
     #(r'', direct_to_template, {'template': 'index.html'}),
-    url(r'upload', 'mozpackager.frontend.views.upload', name='frontend.upload'),
-    url(r'task', 'mozpackager.frontend.views.task_test', name='frontend.task_test'),
+    #url(r'upload', 'mozpackager.frontend.views.upload', name='frontend.upload'),
+    url(r'create', 'mozpackager.frontend.views.create', name='frontend.create'),
+    url(r'edit/(?P<id>\d+)[/]', 'mozpackager.frontend.views.edit', name='frontend.edit'),
+    url(r'detail/(?P<id>\d+)[/]', 'mozpackager.frontend.views.detail', name='frontend.detail'),
+    url(r'download/(?P<id>\d+)[/]', 'mozpackager.frontend.views.serve_file', name='frontend.download'),
+    url(r'list', 'mozpackager.frontend.views.list', name='frontend.list'),
+    url(r'search', 'mozpackager.frontend.views.search', name='frontend.search'),
     
     # Generate a robots.txt
     (r'^robots\.txt$', 

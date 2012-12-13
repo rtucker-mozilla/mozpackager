@@ -17,3 +17,6 @@ build
 tmp/*
 *~
 *.mo
+static/
+rpms/
+package_builds/
