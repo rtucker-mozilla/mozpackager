@@ -1,4 +1,5 @@
 import subprocess
+from settings.local import BUILD_SCRIPTS
 class MozPackage(object):
     """
         MozPackage is essentially just a class to encapsulate a request into a
@@ -159,7 +160,7 @@ class MozPackager:
                     '--root=%s' % self.config,
                     '--arch=%s' % self.arch,
                     '--copyin',
-                    '/tmp/build_package.sh',
+                    '%s/build_package.sh' % BUILD_SCRIPTS,
                     '/'
                     
                     ]
