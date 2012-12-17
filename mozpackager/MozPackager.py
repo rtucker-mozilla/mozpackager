@@ -106,7 +106,6 @@ class MozPackager:
         self.config = 'mozilla-6-x86_64'
         print "self.config is: %s" % self.config
         self.clean()
-        pass
 
     def build_mock(self, root=None, arch=None):
         """
@@ -197,7 +196,7 @@ class MozPackager:
         else:
             version_string = ''
         if package and not upload_package:
-            cmd = '/build_package.sh "setarch %s fpm -s %s -t %s -n %s %s %s"' % (
+            cmd = '/build_package.sh setarch %s fpm -s %s -t %s -n %s %s %s' % (
                     self.build_arch,
                     source,
                     destination,
@@ -306,7 +305,7 @@ class MozPackager:
     def _parse_build_status(self, input_text):
         for l in input_text.split('\n'):
             print l
-        return 'State Changed: end' in [l for l in input_text.split('\n')]
+        return 'State Changed: end'  or 'Finish: run' in [l for l in input_text.split('\n')]
 
     def _install_packages(self, package_list = None):
         """
@@ -324,7 +323,9 @@ class MozPackager:
                         '--install',
                         '%s' % package
                     ]
+            print "Installing Package %s" % package
             output, errors = self.run_command(install)
+            print output, errors
             installed_count += 1
         #install = [
         #            self.mock,

@@ -2,7 +2,7 @@ from celery.decorators import task
 from celery.registry import tasks
 from celery.task import Task
 from mozpackager.MozPackager import MozPackager
-from mozpackager.settings import BUILD_DIR
+from mozpackager.settings import BUILD_DIR, BUILD_LOG_DIR
 from mozpackager.frontend import models
 import json
 import re
@@ -37,16 +37,19 @@ def build_mock_environment(moz_package=None, task_id=None):
             """
             pass
     try:
-        mp.copyout('/tmp/log', '/tmp/log')
-        output_log = open('/tmp/log', 'r').read()
-    except:
+        print "Copying out log"
+        mp.copyout('/tmp/log', '%s/%s' % (BUILD_LOG_DIR, moz_package.install_package_name))
+        output_log = open('%s/%s' % (BUILD_LOG_DIR, moz_package.install_package_name), 'r').read()
+    except Exception, e:
         output_log = ''
         print "Exception on copying out /tmp/log"
+        print "%s" % (e)
 
 
     try:
-        mp.copyout('/tmp/errors', '/tmp/errors')
-        error_log = open('/tmp/errors', 'r').read()
+        print "Copying out errors"
+        mp.copyout('/tmp/errors', '%s/%s_errors' % (BUILD_LOG_DIR, moz_package.install_package_name))
+        error_log = open('%s/%s_errors' % (BUILD_LOG_DIR, moz_package.install_package_name), 'r').read()
     except:
         error_log = ''
         print "Exception on copying out /tmp/errors"
@@ -76,19 +79,5 @@ def build_mock_environment(moz_package=None, task_id=None):
     package_model.add_log('ERROR', error_log)
     if build_status == 'Completed':
         package_model.add_log('INFO', output_log)
-    """
-
-    if message and path:
-        mp.copyout(path, BUILD_DIR)
-        mp.copyout('/tmp/log', '/tmp/')
-        mp.copyout('/tmp/error', '/tmp/')
-        package_model = models.MozillaPackage.objects.get(celery_id = task_id)
-
-        ## Going to remove the celery id here, just so that we don't have
-        ## to worry about ever getting a duplicate
-
-    else:
-        print "did not build"
-    """
 
 tasks.register(build_mock_environment)
