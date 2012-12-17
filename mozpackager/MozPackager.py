@@ -90,7 +90,6 @@ class MozPackager:
             'zeroinstall-injector',
             'ruby-devel',
             'python-devel',
-            'openldap-devel',
             'rubygems',
             'python-setuptools',
             'rubygem-fpm',
@@ -306,7 +305,7 @@ class MozPackager:
     def _parse_build_status(self, input_text):
         for l in input_text.split('\n'):
             print l
-        return 'State Changed: end' in [l for l in input_text.split('\n')]
+        return 'State Changed: end'  or 'Finish: run' in [l for l in input_text.split('\n')]
 
     def _install_packages(self, package_list = None):
         """
