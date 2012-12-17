@@ -88,7 +88,8 @@ def create(request):
                             mozilla_package = form.instance,
                             name = dep,
                             ).save()
-            moz_package = MozPackage(request)
+            request_dict = request.POST
+            moz_package = MozPackage(request_dict)
             form.process(moz_package, form.instance)
             return HttpResponseRedirect(reverse('frontend.list'))
         form = forms.PackageForm(request.POST, request.FILES)

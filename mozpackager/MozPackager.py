@@ -27,20 +27,20 @@ class MozPackage(object):
     root = None
     root_prefix = 'mozilla'
 
-    def __init__(self, request):
-        self.arch = request.POST.get('arch_type', None)
-        self.output_type = request.POST.get('output_type', None)
-        self.install_package_name = request.POST.get('install_package_name', None)
-        self.package_version = request.POST.get('package_version', None)
-        self.prefix_dir = request.POST.get('prefix_dir', None)
-        self.application_group = request.POST.get('application_group', None)
-        self.dependencies = request.POST.getlist('dependencies', None)
-        self.conflicts = request.POST.get('conflicts', None)
-        self.provides = request.POST.get('provides', None)
-        self.package_url = request.POST.get('package_url', None)
+    def __init__(self, request_dict):
+        self.arch = request_dict.get('arch_type', None)
+        self.output_type = request_dict.get('output_type', None)
+        self.install_package_name = request_dict.get('install_package_name', None)
+        self.package_version = request_dict.get('package_version', None)
+        self.prefix_dir = request_dict.get('prefix_dir', None)
+        self.application_group = request_dict.get('application_group', None)
+        self.dependencies = request_dict.getlist('dependencies', None)
+        self.conflicts = request_dict.get('conflicts', None)
+        self.provides = request_dict.get('provides', None)
+        self.package_url = request_dict.get('package_url', None)
         #self.upload_package = request.FILES.get('upload_package', None)
-        self.input_type = request.POST.get('input_type', None)
-        self.rhel_version = request.POST.get('rhel_version', None)
+        self.input_type = request_dict.get('input_type', None)
+        self.rhel_version = request_dict.get('rhel_version', None)
         self.upload_package_file_name = None
         if self.output_type == 'rpm':
             self.os = 'RHEL'
@@ -134,7 +134,7 @@ class MozPackager:
                 self.mock,
                 '--root=%s' % self.config,
                 '--arch=%s' % self.arch,
-                '--scrub all']
+                '--scrub=all']
         output, errors = self.run_command(scrub_mock)
 
         init_mock = [
