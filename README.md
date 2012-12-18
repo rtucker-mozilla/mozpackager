@@ -1,5 +1,10 @@
 mozpackager
-=======
+===========
+
+Usage Instructions
+-----
+
+
 
 Installation Instructions
 =========================
@@ -14,7 +19,4 @@ git submodule update --recursive
 pip install -r requirements/new.txt  
 sudo yum install rabbitmq-server
 }}}
-
-
-
 More readme coming soon  

@@ -9,6 +9,7 @@ import forms
 from mozpackager.MozPackager import MozPackage
 from tasks import build_mock_environment
 from mozpackager.settings import BUILD_DIR
+from mozpackager.settings.local import README_PATH
 from django.core.servers.basehttp import FileWrapper
 import mimetypes
 import os
@@ -16,6 +17,7 @@ from django.db.models import Q
 import operator
 import json
 from django.views.decorators.csrf import csrf_exempt
+import markdown2
 
 def search(request):
     search = request.GET.get('q', None)
@@ -120,6 +122,18 @@ def list(request):
             },
             RequestContext(request) )
 
+def home(request):
+    markup = markdown2.markdown_path(README_PATH)
+    markup = fix_markup(markup)
+    return render_to_response('home.html',
+            { 
+                'markup': markup,
+            },
+            RequestContext(request))
+def fix_markup(markup):
+    markup = markup.replace("{{{", "<pre>")
+    markup = markup.replace("}}}", "</pre>")
+    return markup
 def serve_file(request, id):
 
     moz_package = get_object_or_404(models.MozillaPackage, id=id)
