@@ -217,7 +217,7 @@
             });
             $.validator.addMethod("package_dependency", function (value, element) {
                 var re = new RegExp(/^[\w-_]+$|^[\w-_]+\s{0,1}[<>=]{1,2}\s{0,1}[\d\.]+$/);
-                console.debug("Validating " + value);
+                //console.debug("Validating " + value);
                 return re.test(value);
             }, "Dependency is invalid: Please enter a valid package dependency.");
 

@@ -250,7 +250,7 @@ class MozPackager:
                         '--root=%s' % self.config,
                         '--arch=%s' % self.arch,
                         '--shell',
-                        '/build_package.sh "setarch %s fpm -s dir -t %s -n package_test -v 1.0 -C /tmp/build ./"' % (self.build_arch, destination),
+                        '/build_package.sh setarch %s fpm -s dir -t %s -n package_test -v 1.0 -C /tmp/build ./' % (self.build_arch, destination),
                         ]
                 print cmd
                 output, errors = self.run_command(cmd)
