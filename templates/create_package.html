@@ -125,10 +125,12 @@
         }
         function add_dependency(){
            $("#dependency_template").append('<div style="clear: both;"><label>Dependency:</label>');
-           $("#dependency_template").append('<input style="width: 300px; float: left;" type="text" name="dependency" /><input class="remove_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />');
+           $("#dependency_template").append('<input class="required package_dependency" style="width: 300px; float: left;" type="text" name="dependency" id="dependency_' + dependency_count + '"/><input class="remove_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />');
            $("#dependency_template").append('</div>');
+           dependency_count++;
         }
         $(document).ready(function(){
+            dependency_count = 0;
 
             init();
             $("#id_output_type").change(function(){
@@ -189,6 +191,9 @@
              */
 
             $(document).on("click", ".remove_dependency", function(){
+                    if($(this).prevAll('input').hasClass('error')){
+                        $(this).prev().prev().prev().remove();
+                    }
                     $(this).prev().prev().remove();
                     $(this).prev().remove();
                     $(this).remove();
@@ -210,6 +215,12 @@
                 $("#id_install_package_name").val(final_package_name);
 
             });
+            $.validator.addMethod("package_dependency", function (value, element) {
+                var re = new RegExp(/^[\w-_]+$|^[\w-_]+\s{0,1}[<>=]{0,2}\s{0,1}[\d\.]+$/);
+                console.debug("Validating " + value);
+                return re.test(value);
+            }, "Dependency is invalid: Please enter a valid package dependency.");
+
             var validator = $("#form").validate({
                 submitHandler: function(form) {
                     form.submit();
