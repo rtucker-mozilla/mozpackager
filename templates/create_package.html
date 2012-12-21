@@ -75,10 +75,6 @@
                         {{ form.package_version.label_tag() }}
                         {{ form.package_version }}
                     </span>
-                    <span class="has-tip" data-width="210" title="Where should the package be installed">
-                        {{ form.prefix_dir.label_tag() }}
-                        {{ form.prefix_dir }}
-                    </span>
                     <span class="has-tip" data-width="210" title="Which application group">
                         {{ form.application_group.label_tag() }}
                     </span>
@@ -86,6 +82,11 @@
                     </li>
                     <li id="dependenciesTab">
                             <div id='dependency_template'>
+                                {% for dependency in dependencies %}
+                                    <div style="clear: both;"><label>Dependency:</label>
+                                        <input class="required package_dependency" style="width: 300px; float: left;" type="text" name="dependency" value="{{ dependency }}" id="dependency_{{ loop.index0 }}"/><input class="remove_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />
+                                    </div>
+                                {% endfor %}
                             </div>
                         <br style="clear: both;">
                         <input id='add_dependency_button' style='float: left;' type='button' class="postfix button" value='Add Dependency'>
@@ -102,6 +103,10 @@
                     <span class="has-tip" data-width="210" title="{{ form.package_url.help_text }}">
                         {{ form.package_url.label_tag() }}
                         {{ form.package_url }}
+                    </span>
+                    <span class="has-tip" data-width="210" title="Where should the package be installed">
+                        {{ form.prefix_dir.label_tag() }}
+                        {{ form.prefix_dir }}
                     </span>
                     </li>
                     </ul>
@@ -130,7 +135,7 @@
            dependency_count++;
         }
         $(document).ready(function(){
-            dependency_count = 0;
+            dependency_count = {{ dependency_count }};
 
             init();
             $("#id_output_type").change(function(){

@@ -79,9 +79,11 @@ def edit(request, id):
 @csrf_exempt
 def create(request):
     dependencies = None
+    dependency_count = 0;
     if request.method == "POST":
         form = forms.PackageForm(request.POST, request.FILES)
         dependencies = request.POST.getlist('dependency')
+        dependency_count = len(dependencies)
         if form.is_valid():
             mozilla_package = form.save()
             if dependencies:
@@ -99,7 +101,11 @@ def create(request):
         form = forms.PackageForm()
 
     return render_to_response('create_package.html',
-            { 'form': form, 'dependencies': dependencies},
+            { 'form': form,
+              'dependencies': dependencies,
+              'dependency_count': dependency_count,
+              
+              },
             RequestContext(request) )
 
 def list(request):
