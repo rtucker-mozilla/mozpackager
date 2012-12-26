@@ -34,7 +34,9 @@ class MozPackage(object):
         self.package_version = request_dict.get('package_version', None)
         self.prefix_dir = request_dict.get('prefix_dir', None)
         self.application_group = request_dict.get('application_group', None)
+        import pdb; pdb.set_trace()
         self.dependencies = request_dict.getlist('dependencies', None)
+        print "Dependencies from request: " % self.dependencies
         self.conflicts = request_dict.get('conflicts', None)
         self.provides = request_dict.get('provides', None)
         self.package_url = request_dict.get('package_url', None)
@@ -177,7 +179,7 @@ class MozPackager:
         return output, errors
 
     def build_package(self, source='python', destination='rpm', package=None,
-            upload_package=None, version=None, task_id=None):
+            upload_package=None, version=None, task_id=None, dependencies=[]):
         """
             Builds the package inside of the mock environemtn
             Example CLI usage:
@@ -194,13 +196,22 @@ class MozPackager:
             version_string = ' -v %s ' % version
         else:
             version_string = ''
+
+        dependency_string = ""
+        if len(dependencies) > 0:
+            for dependency in dependency_string:
+                dependency_string = ' -d "%s" %s' % (dependency.name, dependency_string)
+
+        print "Dependency String: %s" % dependency_string
+
         if package and not upload_package:
-            cmd = '/build_package.sh setarch %s fpm -s %s -t %s -n %s %s %s' % (
+            cmd = '/build_package.sh setarch %s fpm -s %s -t %s -n %s %s %s %s' % (
                     self.build_arch,
                     source,
                     destination,
                     package,
                     version_string,
+                    dependency_string,
                     package)
             output, errors = self.execute_mock_cmd(cmd)
             merged = output + errors

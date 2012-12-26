@@ -20,6 +20,7 @@ def build_mock_environment(moz_package=None, task_id=None):
                 upload_package=moz_package.upload_package_file_name,
                 package=moz_package.install_package_name,
                 version=moz_package.package_version,
+                dependencies=moz_package.dependencies,
                 )
     except TimeLimitExceeded:
         should_kill_mock = True
@@ -66,6 +67,7 @@ def build_mock_environment(moz_package=None, task_id=None):
         build_status = 'Failed'
     else:
         build_status = 'Completed'
+
         mp.copyout(path, BUILD_DIR)
 
     package_model = models.MozillaPackage.objects.get(celery_id = task_id)

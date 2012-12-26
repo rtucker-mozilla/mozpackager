@@ -78,7 +78,7 @@ def edit(request, id):
             RequestContext(request) )
 @csrf_exempt
 def create(request):
-    dependencies = None
+    dependencies = []
     dependency_count = 0;
     if request.method == "POST":
         form = forms.PackageForm(request.POST, request.FILES)

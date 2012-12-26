@@ -170,6 +170,7 @@ class PackageForm(forms.ModelForm):
 
 
     def process(self, moz_package, db_object):
+        import pdb; pdb.set_trace()
         db_object.add_log('INFO', 'Build Started')
         if self.cleaned_data['upload_package']:
             moz_package.upload_package_file_name = self.cleaned_data['upload_package']._get_name()
