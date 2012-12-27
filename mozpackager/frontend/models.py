@@ -1,7 +1,19 @@
 from django.db import models
 from django.db.models.query import QuerySet
 import datetime
-
+import re
+"""
+    build_file_template will be the script
+    that gets copied into the mock environment
+    this will ultimately be what builds the package
+    Getting the output logs out requires this to be
+    the case unfortunately
+"""
+build_file_template = """#!/bin/bash
+rm -rf /tmp/build
+mkdir /tmp/build
+`%s 2> /tmp/errors 1> /tmp/log`
+"""
 class MozillaPackage(models.Model):
     arch_type = models.CharField(max_length=128)
     output_type = models.CharField(max_length=128)
@@ -9,8 +21,18 @@ class MozillaPackage(models.Model):
     build_status = models.CharField(max_length=128, blank=True, null=True)
     rhel_version = models.CharField(max_length=128)
     input_type = models.CharField(max_length=128)
+    """
+        package has the label Remote Package
+    """
     package = models.CharField(max_length=128)
     prefix_dir = models.CharField(max_length=128)
+    """
+        install_package_name has the label Package Name
+        this very well will end up being redundant and deprecated
+        The idea is that you can give the output package a new
+        name other than what it is known as via the uploaded
+        file or via pypi/gem
+    """
     install_package_name = models.CharField(max_length=128)
     package_version = models.CharField(max_length=128)
     conflicts = models.CharField(max_length=128)
@@ -29,10 +51,55 @@ class MozillaPackage(models.Model):
     class Meta:
         db_table = 'mozilla_package'
 
+    @property
+    def os(self):
+        return self.os
+
+    @property
+    def version(self):
+        return self.version
+
     def add_log(self, log_type, log_message):
         MozillaPackageLog(mozilla_package = self,
                 log_type = log_type,
                 log_message = log_message).save()
+
+    def generate_build_string(self):
+        """
+            build_string will be our computed
+            fpm command that builds the package
+        """
+        dependency_string = ""
+        version_string = "-v %s" % self.package_version if self.package_version != '' else ""
+        if self.mozillapackagedependency_set:
+            for dep in self.mozillapackagedependency_set.all():
+                dependency_string = "%s -d \"%s\"" % (dependency_string, dep.name)
+
+        if self.input_type == 'python' or self.input_type == 'gem':
+            build_string = "setarch %s fpm -s %s -t %s %s %s %s" % (
+                    self.arch_type,
+                    self.input_type,
+                    self.output_type,
+                    version_string,
+                    dependency_string,
+                    self.install_package_name,
+                    )
+        """
+            Clean up the build string a bit to remove double spaces 
+            that can get added if no version or dependencies
+        """
+        build_string = re.sub('\s+', ' ', build_string)
+        return str(build_string)
+
+    def generate_build_file_content(self):
+        build_file_content = build_file_template % self.generate_build_string()
+        return build_file_content
+
+    def write_build_file(self):
+        file_content = self.generate_build_file_content()
+        pass
+
+
 
     def save(self, *args, **kwargs):
         if not self.id:
@@ -63,6 +130,7 @@ class MozillaPackageLog(models.Model):
 class MozillaPackageDependency(models.Model):
     mozilla_package = models.ForeignKey('MozillaPackage', null=False, blank=False)
     name = models.CharField(max_length=128)
+
 
     class Meta:
         db_table = 'mozilla_package_dependency'

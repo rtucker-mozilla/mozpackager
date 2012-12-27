@@ -28,22 +28,20 @@ class MozPackage(object):
     root_prefix = 'mozilla'
 
     def __init__(self, request_dict):
-        self.arch = request_dict.get('arch_type', None)
-        self.output_type = request_dict.get('output_type', None)
-        self.install_package_name = request_dict.get('install_package_name', None)
-        self.package_version = request_dict.get('package_version', None)
-        self.prefix_dir = request_dict.get('prefix_dir', None)
-        self.application_group = request_dict.get('application_group', None)
-        import pdb; pdb.set_trace()
-        self.dependencies = request_dict.getlist('dependencies', None)
-        print "Dependencies from request: " % self.dependencies
-        self.conflicts = request_dict.get('conflicts', None)
-        self.provides = request_dict.get('provides', None)
-        self.package_url = request_dict.get('package_url', None)
-        #self.upload_package = request.FILES.get('upload_package', None)
-        self.input_type = request_dict.get('input_type', None)
-        self.rhel_version = request_dict.get('rhel_version', None)
-        self.upload_package_file_name = None
+        self.arch = request_dict.pop('arch_type', None)
+        self.output_type = request_dict.pop('output_type', None)
+        self.install_package_name = request_dict.pop('install_package_name', None)
+        self.package_version = request_dict.pop('package_version', None)
+        self.prefix_dir = request_dict.pop('prefix_dir', None)
+        self.application_group = request_dict.pop('application_group', None)
+        self.dependencies = request_dict.pop('dependency', [])
+        self.conflicts = request_dict.pop('conflicts', None)
+        self.provides = request_dict.pop('provides', None)
+        self.package_url = request_dict.pop('package_url', None)
+        #self.upload_package = request.FILES['upload_package']
+        self.input_type = request_dict.pop('input_type', None)
+        self.rhel_version = request_dict.pop('rhel_version', None)
+        self.upload_package_file_name = request_dict.pop('upload_package_file_name', None)
         if self.output_type == 'rpm':
             self.os = 'RHEL'
             self.version = self.rhel_version

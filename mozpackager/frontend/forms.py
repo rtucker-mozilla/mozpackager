@@ -114,6 +114,8 @@ class PackageForm(forms.ModelForm):
     def save(self, *args, **kwargs):
         super(PackageForm, self).save(*args, **kwargs)
 
+
+
     def clean(self):
         require_version = False
         cleaned_data = super(PackageForm, self).clean()
@@ -148,7 +150,10 @@ class PackageForm(forms.ModelForm):
             del cleaned_data['rhel_version']
 
         
-        if upload_package:
+        if upload_package and not cleaned_data['install_package_name']:
+            self._errors['install_package_name'] = self.error_class(['Package Name Required'])
+            del cleaned_data['upload_package']
+        elif upload_package and cleaned_data['install_package_name']:
             cleaned_data['build_package_name'] = cleaned_data['install_package_name']
             cleaned_data['package'] = cleaned_data['install_package_name']
             handle_uploaded_file(upload_package)
@@ -160,17 +165,8 @@ class PackageForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(PackageForm, self).__init__(*args, **kwargs)
-        #self.fields['input_type'].widget.attrs['data-bind'] = 'value: inputType'
-        #self.fields['output_type'].widget.attrs['data-bind'] = 'value: outputType'
-        #self.fields['package'].widget.attrs['data-bind'] = 'visible: isRemotePackage'
-        #self.fields['install_package_name'].widget.attrs['data-bind'] = 'value: id_package'
-        #self.fields['rhel_version'].widget.attrs['data-bind'] = 'visible: isRHEL'
-        #self.fields['upload_package'].widget.attrs['data-bind'] = 'visible: isUpload'
-
-
 
     def process(self, moz_package, db_object):
-        import pdb; pdb.set_trace()
         db_object.add_log('INFO', 'Build Started')
         if self.cleaned_data['upload_package']:
             moz_package.upload_package_file_name = self.cleaned_data['upload_package']._get_name()

@@ -76,6 +76,24 @@ def edit(request, id):
     return render_to_response('create_package.html',
             { 'form': form, 'dependencies': dependencies},
             RequestContext(request) )
+def querydict_to_dict(query_dict):
+    request_dict = {}
+    for k in query_dict.iterkeys():
+        try:
+            """
+                Check to see if we've passed a list object
+                through the request.POST object
+                If so we want to make a list of it
+            """
+            request_dict[k] = query_dict.getlist(k)
+        except AttributeError:
+            """
+                The request.POST[k] item is not a list
+                set the dictionary object direct
+            """
+            request_dict[k] = query_dict[k]
+    return request_dict
+
 @csrf_exempt
 def create(request):
     dependencies = []
@@ -92,9 +110,10 @@ def create(request):
                             mozilla_package = form.instance,
                             name = dep,
                             ).save()
-            request_dict = request.POST
-            moz_package = MozPackage(request_dict)
-            form.process(moz_package, form.instance)
+            #import pdb; pdb.set_trace()
+            request_dict = querydict_to_dict(request.POST.copy())
+            #moz_package = MozPackage(request_dict)
+            #form.process(moz_package, form.instance)
             return HttpResponseRedirect(reverse('frontend.list'))
         form = forms.PackageForm(request.POST, request.FILES)
     else:
@@ -140,6 +159,7 @@ def fix_markup(markup):
     markup = markup.replace("{{{", "<pre>")
     markup = markup.replace("}}}", "</pre>")
     return markup
+
 def serve_file(request, id):
 
     moz_package = get_object_or_404(models.MozillaPackage, id=id)
