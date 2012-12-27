@@ -51,14 +51,6 @@ class MozillaPackage(models.Model):
     class Meta:
         db_table = 'mozilla_package'
 
-    @property
-    def os(self):
-        return self.os
-
-    @property
-    def version(self):
-        return self.version
-
     def add_log(self, log_type, log_message):
         MozillaPackageLog(mozilla_package = self,
                 log_type = log_type,
