@@ -83,7 +83,41 @@ DOMAIN_METHODS['messages'] = [
 #    ('media/js/**.js', 'javascript'),
 # ]
 
-LOGGING = dict(loggers=dict(playdoh = {'level': logging.DEBUG}))
+LOGGING = {
+        'loggers': {
+            'playdoh': {
+                'level': logging.DEBUG,
+                'handlers':['file'],
+            },
+            'celery': {
+                'level': logging.DEBUG,
+                'handlers':['celery', 'file'],
+            }
+        },
+        'formatters': {
+            'standard': {
+                'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                'datefmt' : "%d/%b/%Y %H:%M:%S"
+            },
+        },
+        'handlers': {
+            'file':{
+                'level': 'DEBUG',
+                'class':'logging.handlers.RotatingFileHandler',
+                'filename': "/var/log/mozpackager.debug",
+                'maxBytes': 50000,
+                'backupCount': 2,
+                'formatter': 'standard',
+            },
+            'celery': {
+                'level': 'DEBUG',
+                'class': 'logging.handlers.RotatingFileHandler',
+                'filename': '/var/log/mozpackager_celery.debug',
+                'formatter': 'standard',
+                'maxBytes': 1024 * 1024 * 100,  # 100 mb
+            }
+        }
+    }
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (

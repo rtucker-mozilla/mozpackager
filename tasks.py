@@ -2,12 +2,83 @@ from celery.decorators import task
 from celery.registry import tasks
 from celery.task import Task
 from mozpackager.MozPackager import MozPackager
+from mozpackager.Mock import Mock
 from mozpackager.settings import BUILD_DIR, BUILD_LOG_DIR
 from mozpackager.frontend import models
 import json
 import re
 import subprocess
 from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded 
+import commonware.log
+import logging
+import commonware.log
+log = commonware.log.getLogger('celery')
+@task(name='build_package')
+def build_package(package_id=None):
+    """
+        Placeholder variable should_kill_mock
+        Since I have implemented a timeout exception block
+        I've not had to manually kill the mock environment.
+        Should it become necessary to manually kill the mock,
+        the variable will be the flag
+    """
+    should_kill_mock = False
+    mozilla_package = models.MozillaPackage.objects.get(id=package_id)
+    log.debug('Mozilla Package: %s' % mozilla_package)
+    mock_environment = Mock(mozilla_package)
+    mock_environment.build_mock()
+    mock_environment.install_packages()
+    mock_environment.install_build_file()
+    mock_environment.copyin_source_file()
+    """
+        Here we're copying in a new version of file.rb
+        Pretty hacky, but works in the interim until
+        the upstream version gets patched to function
+        on ruby < 1.9
+        On line 187 of build_scripts/file.rb I have commented out
+        #buffer.force_encoding("BINARY") 
+        force_encoding is new in Ruby 1.9
+    """
+    mock_environment.patch_arr_pm()
+    """
+        Set successful_build to false,
+        only copy out the built package if
+        this is true
+    """
+    successful_build = False
+    build_status = 'Failed'
+    try:
+        mock_environment.build_package()
+        successful_build = True
+    except TimeLimitExceeded:
+        should_kill_mock = True
+        print "TimeLimitExceeded Caught"
+    except SoftTimeLimitExceeded:
+        should_kill_mock = True
+        print "SoftTimeLimitExceeded Caught"
+    """
+        Always capture and save the error_log
+    """
+    error_log = mock_environment.error_log
+    mozilla_package.add_log('ERROR', error_log)
+    if successful_build:
+        build_log = mock_environment.build_log
+        path = mock_environment.build_path
+        log.debug('Task: build_package. Path is %s' % path)
+        if path != '' and path is not None:
+            mozilla_package.add_log('INFO', 'Built File %s' % path)
+            build_status = 'Completed'
+            mozilla_package.add_log('INFO', build_log)
+            mock_environment.copyout_built_package(path, BUILD_DIR)
+        else:
+            build_status = 'Failed'
+
+        mozilla_package.add_log('INFO', 'Build %s' % build_status)
+        mozilla_package.build_status = build_status
+        mozilla_package.build_package_name = path
+
+    mozilla_package.save()
+
 
 @task(name='build_mock_environment')
 def build_mock_environment(moz_package=None, task_id=None):
@@ -83,3 +154,4 @@ def build_mock_environment(moz_package=None, task_id=None):
         package_model.add_log('INFO', output_log)
 
 tasks.register(build_mock_environment)
+tasks.register(build_package)

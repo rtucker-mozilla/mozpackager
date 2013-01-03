@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 import models
 import forms
 from mozpackager.MozPackager import MozPackage
-from tasks import build_mock_environment
+from tasks import build_mock_environment, build_package
 from mozpackager.settings import BUILD_DIR
 from mozpackager.settings.local import README_PATH
 from django.core.servers.basehttp import FileWrapper
@@ -18,6 +18,10 @@ import operator
 import json
 from django.views.decorators.csrf import csrf_exempt
 import markdown2
+import commonware.log
+log = commonware.log.getLogger('playdoh')
+#import logging
+#log = logging.getLogger('mozpackager')
 
 def search(request):
     search = request.GET.get('q', None)
@@ -96,22 +100,36 @@ def querydict_to_dict(query_dict):
 
 @csrf_exempt
 def create(request):
+    log.debug('Create Page Loaded')
     dependencies = []
     dependency_count = 0;
     if request.method == "POST":
+        log.debug('POST Received: %s' % request.POST)
+
         form = forms.PackageForm(request.POST, request.FILES)
         dependencies = request.POST.getlist('dependency')
         dependency_count = len(dependencies)
+        #import pdb; pdb.set_trace()
         if form.is_valid():
-            mozilla_package = form.save()
+            form.save()
+            mozilla_package = form.instance
             if dependencies:
                 for dep in dependencies:
                     models.MozillaPackageDependency(
-                            mozilla_package = form.instance,
+                            mozilla_package = mozilla_package,
                             name = dep,
                             ).save()
             #import pdb; pdb.set_trace()
             request_dict = querydict_to_dict(request.POST.copy())
+            cleaned_data = form.cleaned_data
+            if form.cleaned_data['upload_package']:
+                mozilla_package.upload_package_file_name = form.cleaned_data['upload_package']._get_name()
+                mozilla_package.save()
+            result = build_package.apply_async(args=[],kwargs = { 'package_id': mozilla_package.id},
+                    queue='rhel-6-x86_64',
+                    routing_key='rhel-6-x86_64.build')
+            mozilla_package.celery_id = result
+            mozilla_package.save()
             #moz_package = MozPackage(request_dict)
             #form.process(moz_package, form.instance)
             return HttpResponseRedirect(reverse('frontend.list'))

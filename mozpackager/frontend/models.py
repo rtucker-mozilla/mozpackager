@@ -12,7 +12,7 @@ import re
 build_file_template = """#!/bin/bash
 rm -rf /tmp/build
 mkdir /tmp/build
-`%s 2> /tmp/errors 1> /tmp/log`
+%s 2> /tmp/errors 1> /tmp/log
 """
 class MozillaPackage(models.Model):
     arch_type = models.CharField(max_length=128)
@@ -21,6 +21,7 @@ class MozillaPackage(models.Model):
     build_status = models.CharField(max_length=128, blank=True, null=True)
     rhel_version = models.CharField(max_length=128)
     input_type = models.CharField(max_length=128)
+    upload_package_file_name = models.CharField(max_length=255, blank=True, null=True)
     """
         package has the label Remote Package
     """
@@ -76,11 +77,23 @@ class MozillaPackage(models.Model):
                     dependency_string,
                     self.install_package_name,
                     )
+        elif self.input_type == 'rpm' or self.input_type =='deb':
+            build_string = "setarch %s fpm -s %s -t %s %s %s %s" % (
+                    self.arch_type,
+                    'rpm',
+                    self.output_type,
+                    version_string,
+                    dependency_string,
+                    self.upload_package_file_name,
+                    )
+        else:
+            print "Unknown input type %s" % self.input_type
         """
             Clean up the build string a bit to remove double spaces 
             that can get added if no version or dependencies
         """
         build_string = re.sub('\s+', ' ', build_string)
+        print build_string
         return str(build_string)
 
     def generate_build_file_content(self):
@@ -89,6 +102,7 @@ class MozillaPackage(models.Model):
 
     def write_build_file(self):
         file_content = self.generate_build_file_content()
+        return file_content
         pass
 
 
