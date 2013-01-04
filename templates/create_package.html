@@ -249,6 +249,9 @@
                 if(input_type == 'deb'){
                     var final_package_name = full_package_name.split(/_/)[0]
                 }
+                if(input_type == 'tar-gz'){
+                    var final_package_name = full_package_name.split(/\.tar\.gz/)[0]
+                }
                 $("#id_install_package_name").val(final_package_name);
 
             });
