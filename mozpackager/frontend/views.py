@@ -44,9 +44,14 @@ def detail(request, id):
         dependencies = [n.name for n in instance.mozillapackagedependency_set.all()]
     except:
         dependencies= []
+    try:
+        system_dependencies = [n.name for n in instance.mozillapackagesystemdependency_set.all()]
+    except:
+        system_pendencies= []
     return render_to_response('package_detail.html',
             { 
                 'dependencies': dependencies,
+                'system_dependencies': system_dependencies,
                 'package': instance },
             RequestContext(request) )
 @csrf_exempt
@@ -102,13 +107,17 @@ def querydict_to_dict(query_dict):
 def create(request):
     log.debug('Create Page Loaded')
     dependencies = []
+    system_dependencies = []
     dependency_count = 0;
+    system_dependency_count = 0;
     if request.method == "POST":
         log.debug('POST Received: %s' % request.POST)
 
         form = forms.PackageForm(request.POST, request.FILES)
         dependencies = request.POST.getlist('dependency')
         dependency_count = len(dependencies)
+        system_dependencies = request.POST.getlist('system_dependency')
+        system_dependency_count = len(system_dependencies)
         #import pdb; pdb.set_trace()
         if form.is_valid():
             form.save()
@@ -116,6 +125,12 @@ def create(request):
             if dependencies:
                 for dep in dependencies:
                     models.MozillaPackageDependency(
+                            mozilla_package = mozilla_package,
+                            name = dep,
+                            ).save()
+            if system_dependencies:
+                for dep in system_dependencies:
+                    models.MozillaPackageSystemDependency(
                             mozilla_package = mozilla_package,
                             name = dep,
                             ).save()
@@ -141,6 +156,8 @@ def create(request):
             { 'form': form,
               'dependencies': dependencies,
               'dependency_count': dependency_count,
+              'system_dependencies': system_dependencies,
+              'system_dependency_count': system_dependency_count,
               
               },
             RequestContext(request) )

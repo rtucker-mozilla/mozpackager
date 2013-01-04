@@ -4,14 +4,6 @@ import json
 class Mock:
     root = None
     mock = '/usr/bin/mock'
-    required_install_packages = [
-            'zeroinstall-injector',
-            'ruby-devel',
-            'python-devel',
-            'rubygems',
-            'python-setuptools',
-            'rubygem-fpm',
-            ]
     _build_log_text = None
     _error_log_text = None
 
@@ -27,6 +19,14 @@ class Mock:
         self.arch = 'x86_64'
         self.root = 'mozilla-6-x86_64'
         self.mozpackage = mozpackage
+        self.required_install_packages = [
+                'zeroinstall-injector',
+                'ruby-devel',
+                'python-devel',
+                'rubygems',
+                'python-setuptools',
+                'rubygem-fpm',
+                ]
 
     def build_mock(self, root=None, arch=None):
         """
@@ -197,6 +197,11 @@ class Mock:
         return output_log
 
     def install_packages(self, additional_packages = []):
+        if len(self.mozpackage.mozillapackagesystemdependency_set.all()) > 0:
+            for dep in self.mozpackage.mozillapackagesystemdependency_set.all():
+                additional_packages.append(dep.name)
+        else:
+            additional_packages = []
         self._install_packages(self.required_install_packages + additional_packages)
 
     def build_package(self):

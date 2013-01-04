@@ -61,7 +61,8 @@
                 <div class="row collapse">
                     <dl class="tabs">
                     <dd class="active"><a href="#buildoptions">Build Options</a></dd>
-                    <dd><a href="#dependencies">Dependencies</a></dd>
+                    <dd><a href="#packagedependencies">Package Dependencies</a></dd>
+                    <dd><a href="#systemdependencies">System Dependencies</a></dd>
                     <dd><a href="#packageoptions">Package Options</a></dd>
                     </dl>
 
@@ -80,7 +81,7 @@
                     </span>
                         {{ form.application_group }}
                     </li>
-                    <li id="dependenciesTab">
+                    <li id="packagedependenciesTab">
                             <div id='dependency_template'>
                                 {% for dependency in dependencies %}
                                     <div style="clear: both;"><label>Dependency:</label>
@@ -90,6 +91,17 @@
                             </div>
                         <br style="clear: both;">
                         <input id='add_dependency_button' style='float: left;' type='button' class="postfix button" value='Add Dependency'>
+                    </li>
+                    <li id="systemdependenciesTab">
+                            <div id='system_dependency_template'>
+                                {% for dependency in system_dependencies %}
+                                    <div style="clear: both;"><label>Dependency:</label>
+                                        <input class="required system_dependency" style="width: 300px; float: left;" type="text" name="system_dependency" value="{{ dependency }}" id="system_dependency_{{ loop.index0 }}"/><input class="remove_system_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        <br style="clear: both;">
+                        <input id='add_system_dependency_button' style='float: left;' type='button' class="postfix button" value='Add Dependency'>
                     </li>
                     <li id="packageoptionsTab">
                     <span class="has-tip" data-width="210" title="{{ form.conflicts.help_text }}">
@@ -134,8 +146,17 @@
            $("#dependency_template").append('</div>');
            dependency_count++;
         }
+
+
+        function add_system_dependency(){
+           $("#system_dependency_template").append('<div style="clear: both;"><label>Dependency:</label>');
+           $("#system_dependency_template").append('<input class="required package_system_dependency" style="width: 300px; float: left;" type="text" name="system_dependency" id="system_dependency_' + system_dependency_count + '"/><input class="remove_system_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />');
+           $("#system_dependency_template").append('</div>');
+           dependency_count++;
+        }
         $(document).ready(function(){
             dependency_count = {{ dependency_count }};
+            system_dependency_count = {{ system_dependency_count }};
 
             init();
             $("#id_output_type").change(function(){
@@ -203,9 +224,20 @@
                     $(this).prev().remove();
                     $(this).remove();
             });
+            $(document).on("click", ".remove_system_dependency", function(){
+                    if($(this).prevAll('input').hasClass('error')){
+                        $(this).prev().prev().prev().remove();
+                    }
+                    $(this).prev().prev().remove();
+                    $(this).prev().remove();
+                    $(this).remove();
+            });
 
             $("#add_dependency_button").click(function(){
                     add_dependency();
+            });
+            $("#add_system_dependency_button").click(function(){
+                    add_system_dependency();
             });
 
             $("#id_upload_package").change(function(){

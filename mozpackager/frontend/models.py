@@ -86,6 +86,16 @@ class MozillaPackage(models.Model):
                     dependency_string,
                     self.upload_package_file_name,
                     )
+        elif self.input_type == 'tar-gz':
+            build_string = 'mkdir /tmp/build;'
+            build_string += '/bin/tar zxf /%s -C /tmp/build/;' % self.upload_package_file_name
+            build_string += "setarch %s fpm -s dir -t %s %s %s -C /tmp/build -n \"%s\" ./" % (
+                    self.arch_type,
+                    self.output_type,
+                    version_string,
+                    dependency_string,
+                    self.install_package_name,
+                    )
         else:
             print "Unknown input type %s" % self.input_type
         """
@@ -140,3 +150,10 @@ class MozillaPackageDependency(models.Model):
 
     class Meta:
         db_table = 'mozilla_package_dependency'
+class MozillaPackageSystemDependency(models.Model):
+    mozilla_package = models.ForeignKey('MozillaPackage', null=False, blank=False)
+    name = models.CharField(max_length=128)
+
+
+    class Meta:
+        db_table = 'mozilla_system_dependency'
