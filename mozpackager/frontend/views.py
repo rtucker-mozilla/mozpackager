@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 import models
 import forms
 from mozpackager.MozPackager import MozPackage
-from tasks import build_mock_environment, build_package
+from tasks import build_package
 from mozpackager.settings import BUILD_DIR
 from mozpackager.settings.local import README_PATH
 from django.core.servers.basehttp import FileWrapper

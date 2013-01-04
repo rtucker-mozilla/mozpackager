@@ -243,14 +243,15 @@
             $("#id_upload_package").change(function(){
                 var input_type = $("#id_input_type").val();
                 var full_package_name = $(this).val()
+                var final_package_name = "";
                 if(input_type == 'rpm'){
-                    var final_package_name = full_package_name.split(/-/)[0]
-                }
-                if(input_type == 'deb'){
-                    var final_package_name = full_package_name.split(/_/)[0]
-                }
-                if(input_type == 'tar-gz'){
-                    var final_package_name = full_package_name.split(/\.tar\.gz/)[0]
+                    final_package_name = full_package_name.split(/-/)[0]
+                } else if(input_type == 'deb'){
+                    final_package_name = full_package_name.split(/_/)[0]
+                } else if(input_type == 'tar-gz'){
+                    final_package_name = full_package_name.split(/\.tar\.gz/)[0]
+                } else if(input_type == 'zip'){
+                    final_package_name = full_package_name.split(/\.zip/)[0]
                 }
                 $("#id_install_package_name").val(final_package_name);
 
