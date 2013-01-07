@@ -23,20 +23,20 @@ log = commonware.log.getLogger('playdoh')
 #import logging
 #log = logging.getLogger('mozpackager')
 
+@csrf_exempt
 def search(request):
-    search = request.GET.get('q', None)
-    results = []
+    search = request.POST.get('search', None)
+    packages = []
     if search:
         filters = [Q(**{"%s__icontains" % t: search})
                         for t in models.MozillaPackage.search_fields]
         packages = models.MozillaPackage.objects.filter(
-                    reduce(operator.or_, filters))
-        for p in packages:
-            results.append({
-                'name': p.package,
-                'id': '/en-US/detail/%s/' % p.id,
-                })
-    return HttpResponse(json.dumps(results))
+                    reduce(operator.or_, filters)).order_by('-created_on')
+    return render_to_response('search_results.html',
+            { 
+                'packages': packages
+            },
+            RequestContext(request) )
 
 def detail(request, id):
     instance = get_object_or_404(models.MozillaPackage, id=id)

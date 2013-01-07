@@ -25,7 +25,6 @@
   <link rel="stylesheet" href="{{ static('stylesheets/tablesorter.css') }}">
   <link rel="stylesheet" href="{{ static('stylesheets/normalize.css') }}">
   <link rel="stylesheet" href="{{ static('stylesheets/presentation.css') }}">
-  <script type="text/javascript" src="{{ static('javascripts/knockout.min.js') }}"></script>
 
 
   <!-- IE Fix for HTML5 Tags -->
@@ -62,16 +61,18 @@
       <p>Create packages for mrepo</p>
     </div>
     <div class="six columns">
-            <div class="eight mobile-three columns">
-                <input id="search" name="search" value ="{{ search }}" type="text" />
-                {% if search %}
-                    <label>Delete search and submit to clear.</label>
-                {% endif %}
-            </div>
-            <div class="four mobile-one columns">
-                <!--<a href="#" class="postfix button expand">Search</a>-->
-                <input type="button" id='search-button' class="postfix button expand" value="Search" />
-            </div>
+            <form method='post' action='/en-US/search'>
+                <div class="eight mobile-three columns">
+                    <input id="search" name="search" value ="{{ search }}" type="text" />
+                    {% if search %}
+                        <label>Delete search and submit to clear.</label>
+                    {% endif %}
+                </div>
+                <div class="four mobile-one columns">
+                    <!--<a href="#" class="postfix button expand">Search</a>-->
+                    <input type="submit" id='search-button' class="postfix button expand" value="Search" />
+                </div>
+            </form>
     </div>
     <div class="six columns">
         <div data-bind:"text: searchResults.length"></div>
@@ -131,40 +132,6 @@
   <script src="{{ static('javascripts/jquery.tablesorter.min.js') }}"></script>
   <script src="{{ static('javascripts/responsive-tables.js') }}"></script>
   <script src="{{ static('javascripts/jquery.tablesorter.min.js') }}"></script>
-    <script type="text/javascript">
-        function clearSearchResults(){
-            for(i = 0;i <= searchViewModel.searchResults().length;i++){
-                searchViewModel.searchResults.pop();
-            }
-        }
-        $("#search-button").click(function(){
-                var q = $("#search").val();
-                if(q==''){
-                    clearSearchResults();
-                    return;
-                }
-                $.ajax({
-                    url: '/en-US/search?q=' + q,
-                    success: function(data){
-                    clearSearchResults()
-                        var obj = $.parseJSON(data);
-                        $.each(obj, function(key, value){
-                            searchViewModel.searchResults.push({ name:value.name,
-                                link:value.id });
-                        });
-                        
-                    }
-                });
-        });
-        var searchResult = {
-            name: '',
-            link: ''
-        };
-        var searchViewModel = {
-            searchResults: ko.observableArray([]) // Initially empty, so message hidden
-        };
-        ko.applyBindings(searchViewModel, document.getElementById("search_results"));
-    </script>
   <!-- Initialize JS Plugins -->
   {% block extra_footer %}{% endblock %}
 </body>

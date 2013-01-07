@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+<style type='text/css'>
+    #id_upload_package, label[for=upload_package] {
+        display: none;
+    }
+    #id_rhel_version, label[for=rhel_version] {
+        display: none;
+    }
+    label {
+        margin-top: 5px;
+        width: 100%;
+    }
+   select {
+        background: transparent;
+        width: 268px;
+        padding: 5px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        height: 34px;
+    }
+
+
+</style>
+
+
+<div class="row">
+  <div class="twelve columns">
+        <div class="row">
+            <div class="twelve columns">
+<table style="width: 100%;" id="package_table" class="responsive">
+            <thead>
+                <tr>
+                    <th>Created On</th>
+                    <th>Package Name</th>
+                    <th>Architecture</th>
+                    <th>Input Type</th>
+                    <th>Output Type</th>
+                    <th>Build Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                    {% for package in packages %}
+
+                    {% if package.build_status == 'Failed' %}
+                        <tr>
+                        <!--<tr style='background-color: #FF1919;'>-->
+                    {% else %}
+                        <tr>
+                    {% endif %}
+                        <td>{{ package.created_on }}</td>
+                        <td>{{ package.package }}</td>
+                        <td>{{ package.arch_type }}</td>
+                        <td>{{ package.input_type }}</td>
+                        <td>{{ package.output_type }}</td>
+                        <td>{{ package.build_status }}</td>
+                        <td>
+                            {% if package.build_status == 'Completed' %}
+                                <a href="{{ "frontend.detail"|url(package.id) }}">Details</a>&nbsp;
+                                <a href="{{ "frontend.download"|url(package.id) }}">Download</a>
+                            {% else %}
+                            <!--<a style='color: black;' href="{{ "frontend.detail"|url(package.id) }}">Details</a>&nbsp;-->
+                                <a href="{{ "frontend.detail"|url(package.id) }}">Details</a>&nbsp;
+
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not packages %}
+                        <tr>
+                            <td colspan="9">No Records Found</td>
+                        </tr>
+
+                    {% endif %}
+        
+            </tbody>
+            <tfoot>
+                {% if paginator %}
+                    <tr>
+                        <td colspan = "9">
+                            <span class="step-links">
+                                {% if packages.has_previous() %}
+                                    <a href="?page={{ packages.previous_page_number() }}">previous</a>
+                                {% endif %}
+
+                                <span class="current">
+                                    Page {{ packages.number }} of {{ packages.paginator.num_pages }}.
+                                </span>
+
+                                {% if packages.has_next() %}
+                                    <a href="?page={{ packages.next_page_number() }}">next</a>
+                                {% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tfoot>
+        </table>
+
+            </div>
+        </div>
+  </div>
+</form>
+</div>
+
+{% endblock %}
+{% block extra_footer %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#package_table").tablesorter();
+    });
+</script>
+{% endblock %}
