@@ -14,7 +14,18 @@ rm -rf /tmp/build
 mkdir /tmp/build
 %s 2> /tmp/errors 1> /tmp/log
 """
-class MozillaPackage(models.Model):
+class MozillaBuildSourceFile(models.Model):
+    mozilla_package = models.ForeignKey('MozillaPackage', blank=False, null=False)
+    source_file = models.FileField(upload_to='uploads/')
+    input_type = models.CharField(max_length=128)
+
+    class Meta:
+        db_table = 'mozilla_package_source_file'
+
+    def save(self, *args, **kwargs):
+        super(MozillaBuildSourceFile, self).save(*args, **kwargs)
+class MozillaPackageBuild(models.Model):
+    mozilla_package = models.ForeignKey('MozillaPackage', blank=False, null=False)
     arch_type = models.CharField(max_length=128)
     output_type = models.CharField(max_length=128)
     build_package_name = models.CharField(max_length=128, blank=True, null=True)
@@ -26,36 +37,26 @@ class MozillaPackage(models.Model):
         package has the label Remote Package
     """
     package = models.CharField(max_length=128)
-    prefix_dir = models.CharField(max_length=128)
-    """
-        install_package_name has the label Package Name
-        this very well will end up being redundant and deprecated
-        The idea is that you can give the output package a new
-        name other than what it is known as via the uploaded
-        file or via pypi/gem
-    """
-    install_package_name = models.CharField(max_length=128)
-    package_version = models.CharField(max_length=128)
-    conflicts = models.CharField(max_length=128)
-    provides = models.CharField(max_length=128)
-    package_url = models.CharField(max_length=128)
-    application_group = models.CharField(max_length=128)
-    celery_id = models.CharField(max_length=128, blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     completed_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
+    conflicts = models.CharField(max_length=128)
+    provides = models.CharField(max_length=128)
+    prefix_dir = models.CharField(max_length=128)
     search_fields = (
             'arch_type',
             'package'
         )
 
     class Meta:
-        db_table = 'mozilla_package'
+        db_table = 'mozilla_package_build'
 
-    def add_log(self, log_type, log_message):
-        MozillaPackageLog(mozilla_package = self,
-                log_type = log_type,
-                log_message = log_message).save()
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.created_on = datetime.datetime.now()
+            self.build_status = 'Building'
+        self.updated_on = datetime.datetime.now()
+        super(MozillaPackageBuild, self).save(*args, **kwargs)
 
     def generate_build_string(self):
         """
@@ -113,19 +114,38 @@ class MozillaPackage(models.Model):
     def write_build_file(self):
         file_content = self.generate_build_file_content()
         return file_content
-        pass
 
+    def add_log(self, log_type, log_message):
+        MozillaPackageLog(mozilla_package_build = self,
+                log_type = log_type,
+                log_message = log_message).save()
 
+class MozillaPackage(models.Model):
+    name = models.CharField(max_length=128)
+    version = models.CharField(max_length=128)
+    release = models.CharField(max_length=128)
+    vendor = models.CharField(max_length=128, blank=True, null=True)
+    package_url = models.CharField(max_length=128, blank=True, null=True)
+    application_group = models.CharField(max_length=128)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'mozilla_package'
+        unique_together = (
+                'name',
+                'version',
+
+                )
 
     def save(self, *args, **kwargs):
         if not self.id:
             self.created_on = datetime.datetime.now()
-            self.build_status = 'Building'
         self.updated_on = datetime.datetime.now()
         super(MozillaPackage, self).save(*args, **kwargs)
 
 class MozillaPackageLog(models.Model):
-    mozilla_package = models.ForeignKey('MozillaPackage', null=False, blank=False)
+    mozilla_package_build = models.ForeignKey('MozillaPackageBuild', null=False, blank=False)
     log_type = models.CharField(max_length=128)
     log_message = models.TextField()
     log_time = models.DateTimeField(blank = False, null=False, default=datetime.datetime.now)
@@ -144,14 +164,14 @@ class MozillaPackageLog(models.Model):
 
 
 class MozillaPackageDependency(models.Model):
-    mozilla_package = models.ForeignKey('MozillaPackage', null=False, blank=False)
+    mozilla_package = models.ForeignKey('MozillaPackageBuild', null=False, blank=False)
     name = models.CharField(max_length=128)
 
 
     class Meta:
         db_table = 'mozilla_package_dependency'
 class MozillaPackageSystemDependency(models.Model):
-    mozilla_package = models.ForeignKey('MozillaPackage', null=False, blank=False)
+    mozilla_package = models.ForeignKey('MozillaPackageBuild', null=False, blank=False)
     name = models.CharField(max_length=128)
 
 

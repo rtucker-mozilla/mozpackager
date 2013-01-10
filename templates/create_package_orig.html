@@ -20,17 +20,13 @@
         height: 34px;
     }
 
-    ul.errorlist li{
-        color: red;
-    }
-
 
 </style>
 
 
 <div class="row">
 <form id="form" class='custom' enctype="multipart/form-data" method='post' action=''>
-    {% if form.errors  and 1 == 2%}
+    {% if form.errors %}
         <div class="alert-box [success alert secondary]">
             {% for field in form %}
             <div>{{ field.errors|striptags() }}</div>
@@ -40,17 +36,95 @@
   <div class="twelve columns">
         <div class="row">
             <div class="six columns">
-                <form method='post' action='.'>
-                {{ form }}
+                    {{ form.arch_type.label_tag() }}
+                    {{ form.arch_type }}
+                    {{ form.output_type.label_tag() }}
+                    {{ form.output_type }}
+
+                    <label data-bind="visible: isRHEL" id='rhel_version_label' style='display: none;' for='id_rhel_version'>RHEL Version</label>
+                    {{ form.rhel_version }}
+
+                    {{ form.input_type.label_tag() }}
+                    {{ form.input_type }}
+                    <label  id='package_label' for='id_package'>Remote Package</label>
+                    {{ form.package }}
+                    <label  id='upload_package_label' for='id_upload_package'>Upload Package</label>
+                    {{ form.upload_package }}
+                    <br />
+                    <br />
 
                 
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                    <br />
-                    <br />
                     <input type="submit" class="postfix button" value="Create" />
-                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}"> 
-                </form>
             </div>
+            <div class="six columns">
+                <div class="row collapse">
+                    <dl class="tabs">
+                    <dd class="active"><a href="#buildoptions">Build Options</a></dd>
+                    <dd><a href="#packagedependencies">Package Dependencies</a></dd>
+                    <dd><a href="#systemdependencies">System Dependencies</a></dd>
+                    <dd><a href="#packageoptions">Package Options</a></dd>
+                    </dl>
+
+                    <ul class="tabs-content">
+                    <li class="active" id="buildoptionsTab">
+                    <span class="has-tip" data-width="210" title="What will the package name be for the output file">
+                        {{ form.install_package_name.label_tag() }}
+                        {{ form.install_package_name }}
+                    </span>
+                    <span class="has-tip" data-width="210" title="Package version">
+                        {{ form.package_version.label_tag() }}
+                        {{ form.package_version }}
+                    </span>
+                    <span class="has-tip" data-width="210" title="Which application group">
+                        {{ form.application_group.label_tag() }}
+                    </span>
+                        {{ form.application_group }}
+                    </li>
+                    <li id="packagedependenciesTab">
+                            <div id='dependency_template'>
+                                {% for dependency in dependencies %}
+                                    <div style="clear: both;"><label>Dependency:</label>
+                                        <input class="required package_dependency" style="width: 300px; float: left;" type="text" name="dependency" value="{{ dependency }}" id="dependency_{{ loop.index0 }}"/><input class="remove_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        <br style="clear: both;">
+                        <input id='add_dependency_button' style='float: left;' type='button' class="postfix button" value='Add Dependency'>
+                    </li>
+                    <li id="systemdependenciesTab">
+                            <div id='system_dependency_template'>
+                                {% for dependency in system_dependencies %}
+                                    <div style="clear: both;"><label>Dependency:</label>
+                                        <input class="required system_dependency" style="width: 300px; float: left;" type="text" name="system_dependency" value="{{ dependency }}" id="system_dependency_{{ loop.index0 }}"/><input class="remove_system_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        <br style="clear: both;">
+                        <input id='add_system_dependency_button' style='float: left;' type='button' class="postfix button" value='Add Dependency'>
+                    </li>
+                    <li id="packageoptionsTab">
+                    <span class="has-tip" data-width="210" title="{{ form.conflicts.help_text }}">
+                        {{ form.conflicts.label_tag() }}
+                        {{ form.conflicts }}
+                    </span>
+                    <span class="has-tip" data-width="210" title="{{ form.provides.help_text }}">
+                        {{ form.provides.label_tag() }}
+                        {{ form.provides }}
+                    </span>
+                    <span class="has-tip" data-width="210" title="{{ form.package_url.help_text }}">
+                        {{ form.package_url.label_tag() }}
+                        {{ form.package_url }}
+                    </span>
+                    <span class="has-tip" data-width="210" title="Where should the package be installed">
+                        {{ form.prefix_dir.label_tag() }}
+                        {{ form.prefix_dir }}
+                    </span>
+                    </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
   </div>
 </form>
 </div>

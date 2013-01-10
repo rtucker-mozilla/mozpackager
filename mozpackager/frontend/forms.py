@@ -2,63 +2,105 @@ from django import forms
 import models
 from tasks import build_mock_environment
 from mozpackager.MozPackager import MozPackage
-def handle_uploaded_file(f):
-    with open('/tmp/%s' % f._get_name(), 'wb+') as destination:
+def handle_uploaded_file(f, path = None):
+    if not path:
+        path = '/tmp/'
+    with open('/%s/%s' % (path, f._get_name()), 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
     return f._get_name()
 application_groups = (
-'Amusements/Games',
-'Amusements/Graphics',
-'Applications/Archiving',
-'Applications/Communications',
-'Applications/Databases',
-'Applications/Editors',
-'Applications/Emulators',
-'Applications/Engineering',
-'Applications/File',
-'Applications/Internet',
-'Applications/Multimedia',
-'Applications/Productivity',
-'Applications/Publishing',
-'Applications/System',
-'Applications/Text',
-'Development/Debuggers',
-'Development/Languages',
-'Development/Libraries',
-'Development/System',
-'Development/Tools',
-'Documentation',
-'System Environment/Base',
-'System Environment/Daemons',
-'System Environment/Kernel',
-'System Environment/Libraries',
-'System Environment/Shells',
-'User Interface/Desktops',
-'User Interface/X',
-'User Interface/X Hardware Support',
+('', '--Please Select--'),
+('Amusements/Games', 'Amusements/Games'),
+('Amusements/Graphics', 'Amusements/Graphics'),
+('Applications/Archiving', 'Applications/Archiving'),
+('Applications/Communications', 'Applications/Communications'),
+('Applications/Databases', 'Applications/Databases'),
+('Applications/Editors', 'Applications/Editors'),
+('Applications/Emulators', 'Applications/Emulators'),
+('Applications/Engineering', 'Applications/Engineering'),
+('Applications/File', 'Applications/File'),
+('Applications/Internet', 'Applications/Internet'),
+('Applications/Multimedia', 'Applications/Multimedia'),
+('Applications/Productivity', 'Applications/Productivity'),
+('Applications/Publishing', 'Applications/Publishing'),
+('Applications/System', 'Applications/System'),
+('Applications/Text', 'Applications/Text'),
+('Development/Debuggers', 'Development/Debuggers'),
+('Development/Languages', 'Development/Languages'),
+('Development/Libraries', 'Development/Libraries'),
+('Development/System', 'Development/System'),
+('Development/Tools', 'Development/Tools'),
+('Documentation', 'Documentation'),
+('System Environment/Base', 'System Environment/Base'),
+('System Environment/Daemons', 'System Environment/Daemons'),
+('System Environment/Kernel', 'System Environment/Kernel'),
+('System Environment/Libraries', 'System Environment/Libraries'),
+('System Environment/Shells', 'System Environment/Shells'),
+('User Interface/Desktops', 'User Interface/Desktops'),
+('User Interface/X', 'User Interface/X'),
+('User Interface/X Hardware Support', 'User Interface/X Hardware Support'),
 )
+output_types = (
+        ('rpm', 'RPM'),
+        ('deb', 'DEB'),
+        )
+rhel_versions = (
+        ('6', '6'),
+        ('5', '5'),
+        )
+file_upload_input_types = (
+        ('rpm', 'rpm'),
+        ('deb', 'deb'),
+        ('tar-gz', '.tar.gz'),
+        ('zip', '.zip'),
+        )
+input_types = (
+        ('python', 'pypi'),
+        ('gem', 'gem'),
+        ('rpm', 'rpm'),
+        ('deb', 'deb'),
+        ('tar-gz', '.tar.gz'),
+        ('zip', '.zip'),
+        )
+arch_types = (
+        ('x86_64', 'x86_64'),
+        ('i386', 'i386'),
+        )
+class MozillaPackageForm(forms.ModelForm):
+    application_group = forms.ChoiceField(
+            choices=application_groups,
+            required=True)
+
+    class meta:
+        model = models.MozillaPackage
+        exclude=(
+                'created_on',
+                'updated_on',
+
+                )
+
+    def __init__(self, *args, **kwargs):
+        super(MozillaPackageForm, self).__init__(*args, **kwargs)
+
+class SourcePackageUploadForm(forms.Form):
+    input_type = forms.ChoiceField(
+            label = 'Input Type',
+            choices=file_upload_input_types,
+            required=True)
+    source_file = forms.FileField(required=False)
+
+    class Meta:
+        model = models.MozillaBuildSourceFile
+        exclude = (
+                'mozilla_package',
+                )
+
+    def save(self, *args, **kwargs):
+        cleaned_data = super(SourcePackageUploadForm, self).clean()
+        handle_uploaded_file(cleaned_data['source_file'], path='/home/rtucker/mozpackager/media/uploads')
+
 class PackageForm(forms.ModelForm):
-    output_types = (
-            ('rpm', 'RPM'),
-            ('deb', 'DEB'),
-            )
-    rhel_versions = (
-            ('6', '6'),
-            ('5', '5'),
-            )
-    input_types = (
-            ('python', 'pypi'),
-            ('gem', 'gem'),
-            ('rpm', 'rpm'),
-            ('deb', 'deb'),
-            ('tar-gz', '.tar.gz'),
-            ('zip', '.zip'),
-            )
-    arch_types = (
-            ('x86_64', 'x86_64'),
-            ('i386', 'i386'),
-            )
     arch_type = forms.ChoiceField(
             label='Architecture',
             choices=arch_types,
@@ -107,7 +149,7 @@ class PackageForm(forms.ModelForm):
             required=False)
 
     application_group = forms.ChoiceField(
-            choices=zip(application_groups, application_groups),
+            choices=application_groups,
             required=True)
 
     upload_package = forms.FileField(required=False)
@@ -156,7 +198,7 @@ class PackageForm(forms.ModelForm):
         elif upload_package and cleaned_data['install_package_name']:
             cleaned_data['build_package_name'] = cleaned_data['install_package_name']
             cleaned_data['package'] = cleaned_data['install_package_name']
-            handle_uploaded_file(upload_package)
+            handle_uploaded_file(upload_package, extra_path=None)
 
         return cleaned_data
     

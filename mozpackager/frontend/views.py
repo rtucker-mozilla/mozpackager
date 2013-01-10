@@ -57,33 +57,56 @@ def detail(request, id):
 @csrf_exempt
 def edit(request, id):
     instance = get_object_or_404(models.MozillaPackage, id=id)
+    dependencies = []
+    system_dependencies = []
+    dependency_count = 0;
+    system_dependency_count = 0;
     try:
         dependencies = [n.name for n in instance.mozillapackagedependency_set.all()]
     except:
         dependencies= []
 
     if request.method == "POST":
-        form = forms.PackageForm(request.POST, request.FILES, instance=instance)
-        dependencies = request.POST.getlist('dependency')
-        if form.is_valid():
-            mozilla_package = form.save()
-            instance.mozillapackagedependency_set.all().delete()
-            if dependencies:
-                for dep in dependencies:
-                    if dep != '':
-                        models.MozillaPackageDependency(
-                                mozilla_package = form.instance,
-                                name = dep,
-                                ).save()
-            moz_package = MozPackage(request)
-            form.process(moz_package)
-            return HttpResponseRedirect(reverse('frontend.create'))
-        form = forms.PackageForm(request.POST, request.FILES)
-    else:
-        form = forms.PackageForm(instance=instance)
+        #form = forms.PackageForm(request.POST, request.FILES, instance=instance)
+        package_upload_form = forms.SourcePackageUploadForm(request.POST, request.FILES, prefix='package-upload')
+        if package_upload_form.is_valid():
+            cleaned_data = package_upload_form.clean()
+            up = models.MozillaBuildSourceFile()
+            up.mozilla_package = instance
+            up.source_file = cleaned_data['source_file']
+            up.input_type = cleaned_data['input_type']
+            up.save()
+            package_upload_form.save()
 
-    return render_to_response('create_package.html',
-            { 'form': form, 'dependencies': dependencies},
+        #dependencies = request.POST.getlist('dependency')
+        #if form.is_valid():
+        #    mozilla_package = form.save()
+        #    instance.mozillapackagedependency_set.all().delete()
+        #    if dependencies:
+        #        for dep in dependencies:
+        #            if dep != '':
+        #                models.MozillaPackageDependency(
+        #                        mozilla_package = form.instance,
+        #                        name = dep,
+        #                        ).save()
+        #    moz_package = MozPackage(request)
+        #    form.process(moz_package)
+        #    return HttpResponseRedirect(reverse('frontend.create'))
+        #form = forms.PackageForm(request.POST, request.FILES)
+    else:
+        #form = forms.PackageForm(instance=instance)
+        package_upload_form = forms.SourcePackageUploadForm(prefix='package-upload')
+
+    return render_to_response('edit.html',
+            { 
+                #'form': form,
+                'dependencies': dependencies,
+                'package_upload_form': package_upload_form,
+                'dependency_count': dependency_count,
+                'system_dependencies': system_dependencies,
+                'instance': instance,
+                'system_dependency_count': system_dependency_count,
+            },
             RequestContext(request) )
 def querydict_to_dict(query_dict):
     request_dict = {}
@@ -105,6 +128,28 @@ def querydict_to_dict(query_dict):
 
 @csrf_exempt
 def create(request):
+    log.debug('Create Page Loaded')
+    if request.method == "POST":
+        log.debug('POST Received: %s' % request.POST)
+
+        form = forms.MozillaPackageForm(request.POST, request.FILES)
+        #import pdb; pdb.set_trace()
+        if form.is_valid():
+            form.save()
+            mozilla_package = form.instance
+            return HttpResponseRedirect(reverse('frontend.edit', kwargs={'id':form.instance.id}))
+        form = forms.MozillaPackageForm(request.POST, request.FILES)
+    else:
+        form = forms.MozillaPackageForm()
+
+    return render_to_response('create_package.html',
+            { 'form': form,
+              
+              },
+            RequestContext(request) )
+
+@csrf_exempt
+def create_orig(request):
     log.debug('Create Page Loaded')
     dependencies = []
     system_dependencies = []
@@ -161,7 +206,6 @@ def create(request):
               
               },
             RequestContext(request) )
-
 def list(request):
     from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
     packages = models.MozillaPackage.objects.all().order_by('-created_on')

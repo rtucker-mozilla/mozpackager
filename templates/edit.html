@@ -20,37 +20,113 @@
         height: 34px;
     }
 
-    ul.errorlist li{
-        color: red;
+
+
+    .package_label {
+        font-weight: normal;
+        padding: 5px;
+    }
+    .package_div {
+        font-weight: bold;
+        clear: right;
+        padding: 5px;
     }
 
-
+    div.clear {
+        clear: both;
+    }
 </style>
 
 
 <div class="row">
 <form id="form" class='custom' enctype="multipart/form-data" method='post' action=''>
-    {% if form.errors  and 1 == 2%}
-        <div class="alert-box [success alert secondary]">
-            {% for field in form %}
-            <div>{{ field.errors|striptags() }}</div>
-            {% endfor %}
-        </div>
-    {% endif %}
   <div class="twelve columns">
         <div class="row">
-            <div class="six columns">
-                <form method='post' action='.'>
-                {{ form }}
+                <div class="two columns">
+                    <div class='package_label'>Package Name</div>
+                    <div class='package_label'>Version</div>
+                    <div class='package_label'>Release</div>
+                    <div class='package_label'>Vendor</div>
+                    <div class='package_label'>Package URL</div>
+                    <div class='package_label'>Application Group</div>
+                </div>
+                <div class="two columns">
+                    <div class='package_div'>{{ instance.name }}</div>
+                    <div class='package_div'>{{ instance.version }}</div>
+                    <div class='package_div'>{{ instance.release }}</div>
+                    <div class='package_div'>{{ instance.vendor if instance.vendor else '&nbsp;'|safe }}</div>
+                    <div class='package_div'>{{ instance.package_url if instance.package_url else '&nbsp;'|safe }}</div>
+                    <div class='package_div'>{{ instance.application_group }}</div>
+                </div>
+            <div class="eight columns">
+                <div class="row collapse">
+                    <dl class="tabs">
+                    <dd class="active"><a href="#packagebuilds">Package Builds</a></dd>
+                    <dd><a href="#buildnew">Build New</a></dd>
+                    <dd><a href="#buildsource">Build Source Files</a></dd>
+                    </dl>
 
-                
-                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                    <br />
-                    <br />
-                    <input type="submit" class="postfix button" value="Create" />
-                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}"> 
-                </form>
+                    <ul class="tabs-content">
+                    <li class="active" id="packagebuildsTab">
+                        <table>
+                            <tr>
+                                <th>Package Name</th>
+                                <th>Build Source</th>
+                                <th>Build Source Type</th>
+                                <th>Build Status</th>
+                                <th>Logs</th>
+                                <th>Action</th>
+                            </tr>
+                        {% for package_build in instance.mozillapackagebuild_set.all() %}
+
+                        {% endfor %}
+                            <tr>
+                                <td>foo-bar-1.0.39.rpm</td>
+                                <td><a href="#">source-file-1.0.1.src.rpm</a></td>
+                                <td>Source RPM</td>
+                                <td>Completed</td>
+                                <td><a href="#" class='view_build_log' rel='3'>View</a></td>
+                                <td><a href="#" class='' rel='3'>Download</a> | <a href="#" class='' rel='3'>Delete</a></td>
+                            </tr>
+                        </table>
+                    </li>
+                    <li id="buildnewTab">
+                            <div id='dependency_template'>
+                                {% for dependency in dependencies %}
+                                    <div style="clear: both;"><label>Dependency:</label>
+                                        <input class="required package_dependency" style="width: 300px; float: left;" type="text" name="dependency" value="{{ dependency }}" id="dependency_{{ loop.index0 }}"/><input class="remove_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        <br style="clear: both;">
+                    </li>
+                    <li id="buildsourceTab">
+                        <form id="form" class='custom' enctype="multipart/form-data" method='post' action='.'>
+                            {% if instance.mozillabuildsourcefile_set.all()|count > 0 %}
+                                <table>
+                                    <tr>
+                                        <th>File Name</th>
+                                        <th>Input Type</th>
+                                        <th>Download</th>
+                                    </tr>
+                                {% for upload in instance.mozillabuildsourcefile_set.all() %}
+                                    <tr>
+                                        <td>{{ upload.source_file }}</td>
+                                        <td>{{ upload.input_type }}</td>
+                                        <td><a href="{{ upload.get_absolute_url }}">Download</a></td>
+                                    </tr>
+                                {% endfor %}
+                                </table>
+                            {% endif %}
+                            {{ package_upload_form }}
+                            <br style="clear: both;">
+                            <input type='submit' style='margin-top: 5px;' class="small button" value="Upload" style="float: left; margin: 0px 0 0 3px;"  />
+                        </form>
+                    </li>
+                    </ul>
+                </div>
             </div>
+        </div>
   </div>
 </form>
 </div>
