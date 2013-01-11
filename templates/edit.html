@@ -151,24 +151,10 @@
                             <span id='new_build_span_package_dependency' class='new_build_span'>
                                 <div class='new_build_span_header'>Package Dependency</div>
                                 <input id='add_dependency_button' style='float: left;' type='button' class="postfix button" value='Add Dependency'>
-                                <div id='dependency_template'>
-                                    {% for dependency in dependencies %}
-                                        <div class='dep_wrapper' style="clear: both;"><label>Dependency:</label>
-                                            <input class="required package_dependency" style="width: 300px;" type="text" name="dependency" value="{{ dependency }}" id="dependency_{{ loop.index0 }}" /><input class="remove_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />
-                                        </div>
-                                    {% endfor %}
-                                </div>
                             </span>
                             <span id='new_build_span_system_dependency' class='new_build_span'>
                                 <div class='new_build_span_header'>System Dependency</div>
                                 <input id='add_system_dependency_button' style='float: left;' type='button' class="postfix button" value='Add Dependency'>
-                                <div id='system_dependency_template'>
-                                    {% for dependency in system_dependencies %}
-                                        <div class='dep_wrapper' style="clear: both;"><label>Dependency:</label>
-                                            <input class="required system_dependency" style="width: 300px;" type="text" name="system_dependency" value="{{ dependency }}" id="system_dependency_{{ loop.index0 }}" /><input class="remove_system_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />
-                                        </div>
-                                    {% endfor %}
-                                </div>
                             </span>
 
                             </span>
@@ -216,18 +202,20 @@
                     //$("#id_install_package_name").attr('disabled', 'disabled');
         }
         function add_dependency(){
-           $("#dependency_template").append('<div class="dep_wrapper" style="clear: both;"><label>Dependency:</label>');
-           $("#dependency_template").append('<input class="required package_dependency" style="width: 300px; float: left;" type="text" name="dependency" id="dependency_' + dependency_count + '"/><input class="remove_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />');
-           $("#dependency_template").append('</div>');
-           dependency_count++;
+            var add_string = '<div class="dep_wrapper" style="clear: both;"><label>Dependency:</label>';
+            add_string += '<input class="required package_dependency" style="width: 300px; float: left;" type="text" name="dependency" id="dependency_' + dependency_count + '"/><input class="remove_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />';
+            add_string += '</div>';
+            $("#add_dependency_button").after(add_string);
+            dependency_count++;
         }
 
 
         function add_system_dependency(){
-           $("#system_dependency_template").append('<div id="div1" class="dep_wrapper" style="clear: both;"><label>Dependency:</label>');
-           $("#system_dependency_template").append('<input class="required system_dependency" style="width: 300px; float: left;" type="text" name="system_dependency" id="system_dependency_' + system_dependency_count + '"/><input class="remove_system_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />');
-           $("#system_dependency_template").append('</div>');
-           system_dependency_count++;
+            var add_string = '<div class="dep_wrapper" style="clear: both;"><label>Dependency:</label>';
+            add_string += '<input class="required system_dependency" style="width: 300px; float: left;" type="text" name="system_dependency" id="system_dependency_' + system_dependency_count + '"/><input class="remove_system_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />';
+            add_string += '</div>';
+            $("#add_system_dependency_button").after(add_string);
+            system_dependency_count++;
         }
         $(document).ready(function(){
             dependency_count = {{ dependency_count }};
@@ -273,8 +261,7 @@
             }
 
             function remove_dep(element){
-                element.prev('div.dep_all').remove();
-                //element.closest('div').next('div').remove();
+                element.parent().remove();
             }
 
             $("#add_dependency_button").click(function(){
