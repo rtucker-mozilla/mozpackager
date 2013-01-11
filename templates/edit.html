@@ -35,11 +35,42 @@
     div.clear {
         clear: both;
     }
+
+
+    .new_build_span {
+        width: 310px;
+        float: left;
+    }
+
+    .new_build_span_header {
+        font-weight: bold;
+        text-align: left;
+    }
+
+    input[type=radio]{
+        margin-right: 3px;
+    }
+
+    .radio_span {
+        line-height: 16px;
+        clear: both;
+        float: left;
+    }
+
+    #remote_package_name_input, #remote_package_div {
+        display: none;
+    }
+
+    .build_sources li {
+        list-style-type: none;
+    }
+    div.error {
+        color: red;
+    }
 </style>
 
 
 <div class="row">
-<form id="form" class='custom' enctype="multipart/form-data" method='post' action=''>
   <div class="twelve columns">
         <div class="row">
                 <div class="two columns">
@@ -62,11 +93,15 @@
                 <div class="row collapse">
                     <dl class="tabs">
                     <dd class="active"><a href="#packagebuilds">Package Builds</a></dd>
-                    <dd><a href="#buildnew">Build New</a></dd>
+                    <dd><a href="#buildsources">Build Sources</a></dd>
+                    <dd><a href="#buildnew">New Build Source</a></dd>
                     <dd><a href="#buildsource">Build Source Files</a></dd>
                     </dl>
 
                     <ul class="tabs-content">
+                    <li class="active" id="buildsourcesTab">
+
+                    </li>
                     <li class="active" id="packagebuildsTab">
                         <table>
                             <tr>
@@ -91,14 +126,53 @@
                         </table>
                     </li>
                     <li id="buildnewTab">
-                            <div id='dependency_template'>
-                                {% for dependency in dependencies %}
-                                    <div style="clear: both;"><label>Dependency:</label>
-                                        <input class="required package_dependency" style="width: 300px; float: left;" type="text" name="dependency" value="{{ dependency }}" id="dependency_{{ loop.index0 }}"/><input class="remove_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        <br style="clear: both;">
+                        <form method='post' action='.' name='build_new_source_form' id='build_new_source_form'>
+                            <span id='new_build_span_source' class='new_build_span'>
+                                <div class='new_build_span_header'>Build Source</div>
+                                <ul class='build_sources'>
+                                    {% if instance.mozillabuildsourcefile_set.all()|count > 0 %}
+                                        {% for upload in instance.mozillabuildsourcefile_set.all() %}
+                                            <li><input type='radio' value='{{ upload.id }}' id='build_source' name='build_source' />{{ upload.source_file|replace("uploads/", "") }}</li>
+                                        {% endfor %}
+                                        <br />
+                                    {% endif %}
+                                    <li><input type='radio' value='gem' name='build_source' />GEM</li>
+                                    <li><input type='radio' value='python' name='build_source' />Python</li>
+                                </ul>
+                                <div id='remote_package_div'>
+                                    <br style='clear: both;' />
+                                    <label id='remote_package_name_input_label' for='remote_package_name_input'>Remote Package Name:</label>
+                                    <input type='text' class='required' id='remote_package_name_input' name='remote_package_name_input' value='' />
+                                </div>
+                                <br style='clear: both;' />
+                                <br style='clear: both;' />
+                                <input id='save_build' style='float: left;' type='submit' class="postfix button" value='Save Build Configuration'>
+                            </span>
+                            <span id='new_build_span_package_dependency' class='new_build_span'>
+                                <div class='new_build_span_header'>Package Dependency</div>
+                                <input id='add_dependency_button' style='float: left;' type='button' class="postfix button" value='Add Dependency'>
+                                <div id='dependency_template'>
+                                    {% for dependency in dependencies %}
+                                        <div class='dep_wrapper' style="clear: both;"><label>Dependency:</label>
+                                            <input class="required package_dependency" style="width: 300px;" type="text" name="dependency" value="{{ dependency }}" id="dependency_{{ loop.index0 }}" /><input class="remove_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </span>
+                            <span id='new_build_span_system_dependency' class='new_build_span'>
+                                <div class='new_build_span_header'>System Dependency</div>
+                                <input id='add_system_dependency_button' style='float: left;' type='button' class="postfix button" value='Add Dependency'>
+                                <div id='system_dependency_template'>
+                                    {% for dependency in system_dependencies %}
+                                        <div class='dep_wrapper' style="clear: both;"><label>Dependency:</label>
+                                            <input class="required system_dependency" style="width: 300px;" type="text" name="system_dependency" value="{{ dependency }}" id="system_dependency_{{ loop.index0 }}" /><input class="remove_system_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </span>
+
+                            </span>
+                        </form>
                     </li>
                     <li id="buildsourceTab">
                         <form id="form" class='custom' enctype="multipart/form-data" method='post' action='.'>
@@ -113,7 +187,7 @@
                                     <tr>
                                         <td>{{ upload.source_file }}</td>
                                         <td>{{ upload.input_type }}</td>
-                                        <td><a href="{{ upload.get_absolute_url }}">Download</a></td>
+                                        <td><a href="{{ upload.get_absolute_url() }}">Download</a></td>
                                     </tr>
                                 {% endfor %}
                                 </table>
@@ -128,7 +202,6 @@
             </div>
         </div>
   </div>
-</form>
 </div>
 
 {% endblock %}
@@ -143,7 +216,7 @@
                     //$("#id_install_package_name").attr('disabled', 'disabled');
         }
         function add_dependency(){
-           $("#dependency_template").append('<div style="clear: both;"><label>Dependency:</label>');
+           $("#dependency_template").append('<div class="dep_wrapper" style="clear: both;"><label>Dependency:</label>');
            $("#dependency_template").append('<input class="required package_dependency" style="width: 300px; float: left;" type="text" name="dependency" id="dependency_' + dependency_count + '"/><input class="remove_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />');
            $("#dependency_template").append('</div>');
            dependency_count++;
@@ -151,16 +224,17 @@
 
 
         function add_system_dependency(){
-           $("#system_dependency_template").append('<div style="clear: both;"><label>Dependency:</label>');
-           $("#system_dependency_template").append('<input class="required package_system_dependency" style="width: 300px; float: left;" type="text" name="system_dependency" id="system_dependency_' + system_dependency_count + '"/><input class="remove_system_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />');
+           $("#system_dependency_template").append('<div id="div1" class="dep_wrapper" style="clear: both;"><label>Dependency:</label>');
+           $("#system_dependency_template").append('<input class="required system_dependency" style="width: 300px; float: left;" type="text" name="system_dependency" id="system_dependency_' + system_dependency_count + '"/><input class="remove_system_dependency small alert button" type="button" value="Remove" style="float: left; margin: 0px 0 0 3px;" />');
            $("#system_dependency_template").append('</div>');
-           dependency_count++;
+           system_dependency_count++;
         }
         $(document).ready(function(){
             dependency_count = {{ dependency_count }};
             system_dependency_count = {{ system_dependency_count }};
+            package_id = {{ instance.id }};
 
-            init();
+            //init();
             $("#id_output_type").change(function(){
                 var output_type = $(this).val();
                 if(output_type == 'rpm'){
@@ -174,44 +248,6 @@
                 }
 
             });
-            $("#id_input_type").change(function(){
-                var input_type = $(this).val();
-                if(input_type == 'python' || input_type == 'gem'){
-                    jQuery("#id_upload_package").hide();
-                    jQuery("#upload_package_label").hide();
-                    jQuery("#id_package").show();
-                    jQuery("#package_label").show();
-                    //$("#id_install_package_name").attr('disabled', 'disabled');
-                    $("#id_upload_package").rules("remove", "required");
-                    $("#id_package").rules("add", "required");
-                    validator.resetForm();
-                    return false;
-                } else {
-                    $("#id_package").val('');
-                    $("#id_install_package_name").val('');
-                    jQuery("#id_package").hide();
-                    jQuery("#package_label").hide();
-                    jQuery("#id_upload_package").show();
-                    jQuery("#upload_package_label").show();
-                    //$("#id_install_package_name").removeAttr('disabled');
-                    $("#id_upload_package").rules("add", "required");
-                    $("#id_package").rules("remove", "required");
-                    validator.resetForm();
-                    return true;
-                }
-            });
-            $("#id_package").keyup(function(){
-                var input_type = $("#id_input_type").val();
-                if(input_type == 'python' || input_type == 'gem'){
-                    $("#id_install_package_name").val($(this).val());
-                }
-            });
-            $("#id_package").change(function(){
-                var input_type = $("#id_input_type").val();
-                if(input_type == 'python' || input_type == 'gem'){
-                    $("#id_install_package_name").val($(this).val());
-                }
-            });
             /*
              * We need a document "live" event handler here
              * The .remove_dependency buttons are created after the
@@ -219,21 +255,27 @@
              */
 
             $(document).on("click", ".remove_dependency", function(){
-                    if($(this).prevAll('input').hasClass('error')){
-                        $(this).prev().prev().prev().remove();
-                    }
-                    $(this).prev().prev().remove();
-                    $(this).prev().remove();
-                    $(this).remove();
+                    remove_dep($(this));
             });
+
             $(document).on("click", ".remove_system_dependency", function(){
-                    if($(this).prevAll('input').hasClass('error')){
-                        $(this).prev().prev().prev().remove();
-                    }
-                    $(this).prev().prev().remove();
-                    $(this).prev().remove();
-                    $(this).remove();
+                    remove_dep($(this));
             });
+
+            function remove_all_deps(){
+                $(".remove_dependency").each(function(){
+                    remove_dep($(this));
+                });
+
+                $(".remove_system_dependency").each(function(){
+                    remove_dep($(this));
+                });
+            }
+
+            function remove_dep(element){
+                element.prev('div.dep_all').remove();
+                //element.closest('div').next('div').remove();
+            }
 
             $("#add_dependency_button").click(function(){
                     add_dependency();
@@ -258,28 +300,101 @@
                 $("#id_install_package_name").val(final_package_name);
 
             });
+            $("input[name=build_source]").change(function(){
+                    if($(this).val() == 'gem' || $(this).val() == 'python'){
+                        show_remote_package_input();
+                    } else {
+                        hide_remote_package_input();
+                    }
+            });
+            function show_remote_package_input(){
+                $("#remote_package_name_input_label").show();
+                $("#remote_package_name_input").show();
+                $("#remote_package_div").show();
+
+            }
+            function hide_remote_package_input(){
+                $("#remote_package_name_input_label").hide();
+                $("#remote_package_name_input").hide();
+                $("#remote_package_div").hide();
+            }
             $.validator.addMethod("package_dependency", function (value, element) {
                 var re = new RegExp(/^[\w-_]+$|^[\w-_]+\s{0,1}[<>=]{1,2}\s{0,1}[\d\.]+$/);
                 //console.debug("Validating " + value);
                 return re.test(value);
             }, "Dependency is invalid: Please enter a valid package dependency.");
 
-            var validator = $("#form").validate({
+            var validator = $("#build_new_source_form").validate({
                 submitHandler: function(form) {
-                    form.submit();
+                    var post_data = serialize_build_source_form();
+                    $("a[href=#buildsources]").click();
+                    reset_add_source_form();
+                    alert("Ajax request here");
                 },
                 messages : {
-                    package: 'The Package Name Required',
+                    build_source: 'The Build Source is Required',
                 },
                 rules: {
-                    install_package_name: {
+                    build_source: {
                         required: true
-                    },
-                    id_package: {
-                        required: true
+                    }
+                },
+                errorElement: "div",
+                wrapper: "div",  // a wrapper around the error message
+                errorPlacement: function(error, element) {
+                    if (element.attr('type') == 'radio' || element.attr('type') == 'checkbox') {
+                        error.addClass('error');  // add a class to the wrapper
+                        error.insertBefore(element);
+                    } else {
+                        error.insertAfter(element);
                     }
                 }
     
+            });
+
+            function serialize_build_source_form(){
+                var return_dict = {};
+                return_dict['remote_package_name_input'] = '';
+                return_dict['package_id'] = package_id;
+                var build_source = $("input[name=build_source]:checked").val();
+                return_dict['build_source'] = build_source;
+
+                if(build_source == 'gem' || build_source == 'python'){
+                    return_dict['remote_package_name_input'] = $("#remote_package_name_input").val();
+                }
+
+                return_dict['dependency'] = [];
+                $(".package_dependency").each(function(){
+                    return_dict['dependency'].push($(this).val());
+                });
+
+                return_dict['system_dependency'] = [];
+                $(".system_dependency").each(function(){
+                    return_dict['system_dependency'].push($(this).val());
+                });
+
+                return return_dict;
+
+            }
+            function reset_add_source_form(){
+                remove_all_deps();
+                $("#remote_package_name_input").val('');
+                $("input[name=build_source]:checked").removeAttr('checked');
+                hide_remote_package_input();
+            }
+            $('#save_build').click(function(){
+                var post_data = serialize_build_source_form();
+                console.log(post_data);
+                $("#build_new_source_form").submit();
+                /*if($("#build_new_source_form").validate()){
+                    alert("Validated");
+                    $("a[href=#buildsources]").click();
+                    reset_add_source_form();
+                } else {
+                    alert('Validation failed');
+
+                }*/
+                return false;
             });
 
 

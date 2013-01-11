@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models.query import QuerySet
 import datetime
 import re
+from mozpackager.settings import MEDIA_URL
 """
     build_file_template will be the script
     that gets copied into the mock environment
@@ -22,8 +23,12 @@ class MozillaBuildSourceFile(models.Model):
     class Meta:
         db_table = 'mozilla_package_source_file'
 
+    def get_absolute_url(self):
+        return '%s%s' % (MEDIA_URL, self.source_file)
+
     def save(self, *args, **kwargs):
         super(MozillaBuildSourceFile, self).save(*args, **kwargs)
+
 class MozillaPackageBuild(models.Model):
     mozilla_package = models.ForeignKey('MozillaPackage', blank=False, null=False)
     arch_type = models.CharField(max_length=128)
