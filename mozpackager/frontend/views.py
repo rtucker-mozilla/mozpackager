@@ -54,6 +54,83 @@ def detail(request, id):
                 'system_dependencies': system_dependencies,
                 'package': instance },
             RequestContext(request) )
+
+def get_build_sources(request, id):
+    return_dict = {}
+    try:
+        mozilla_package = models.MozillaPackage.objects.get(id=id)
+    except models.MozillaPackage.DoesNotExist:
+        return_dict['status'] = 'FAIL'
+        return_dict['message'] = 'Could not find Mozilla Package with id:%s' % id
+        return HttpResponse(json.dumps(return_dict))
+    return_dict['status'] = 'OK'
+    return_dict['sources'] = []
+    for source in mozilla_package.mozillabuildsource_set.all():
+        tmp = {}
+        tmp['id'] = source.id
+        tmp['build_source_type'] = source.build_type
+        tmp['build_source'] = source.remote_package_name
+
+        if len(source.mozillabuildsourcesystemdependency_set.all()) > 0:
+            system_dependency_string = ", ".join([s.name for s in source.mozillabuildsourcesystemdependency_set.all()])
+        else:
+            system_dependency_string = ""
+
+        if len(source.mozillabuildsourcepackagedependency_set.all()) > 0:
+            package_dependency_string = ", ".join([s.name for s in source.mozillabuildsourcepackagedependency_set.all()])
+        else:
+            package_dependency_string = ""
+
+        tmp['system_dependencies'] = system_dependency_string
+        tmp['package_dependencies'] = package_dependency_string
+
+        return_dict['sources'].append(tmp)
+
+    return HttpResponse(json.dumps(return_dict))
+
+@csrf_exempt
+def add_build_source(request, id):
+    response_obj = {}
+    response_obj['status'] = 'FAIL'
+    try:
+        mozilla_package = models.MozillaPackage.objects.get(id=id)
+    except models.MozillaPackage.DoesNotExist:
+        return HttpResponse('Could not find Mozilla Package with id:%s' % id)
+
+    if request.method == 'POST':
+        mozilla_build_source = models.MozillaBuildSource()
+        mozilla_build_source.mozilla_package = mozilla_package
+        mozilla_build_source.local_package_name = request.POST.get('local_package_name_input', None)
+        mozilla_build_source.remote_package_name = request.POST.get('remote_package_name_input', None)
+        build_source = request.POST.get('build_source', None)
+        if build_source != 'gem' and build_source != 'python':
+            build_source_file = models.MozillaBuildSourceFile.objects.get(id=request.POST.get('build_source'))
+            mozilla_build_source.build_source_file = build_source_file
+        else:
+            mozilla_build_source.build_type = build_source
+
+
+        mozilla_build_source.save()
+        system_dependencies = request.POST.getlist('system_dependency[]', [])
+        package_dependencies = request.POST.getlist('dependency[]', [])
+        for p in system_dependencies:
+            tmp = models.MozillaBuildSourceSystemDependency()
+            tmp.mozilla_build_source = mozilla_build_source
+            tmp.name = p
+            tmp.save()
+
+        for p in package_dependencies:
+            tmp = models.MozillaBuildSourcePackageDependency()
+            tmp.mozilla_build_source = mozilla_build_source
+            tmp.name = p
+            tmp.save()
+        response_obj['status'] = 'OK'
+
+    return HttpResponse(json.dumps(response_obj))
+
+    #moz_package = get_object_or_404(models.MozillaPackage, id=id)
+
+
 @csrf_exempt
 def edit(request, id):
     instance = get_object_or_404(models.MozillaPackage, id=id)

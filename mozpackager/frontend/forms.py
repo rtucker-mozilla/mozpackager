@@ -72,7 +72,7 @@ class MozillaPackageForm(forms.ModelForm):
             choices=application_groups,
             required=True)
 
-    class meta:
+    class Meta:
         model = models.MozillaPackage
         exclude=(
                 'created_on',

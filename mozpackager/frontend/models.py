@@ -29,6 +29,23 @@ class MozillaBuildSourceFile(models.Model):
     def save(self, *args, **kwargs):
         super(MozillaBuildSourceFile, self).save(*args, **kwargs)
 
+
+class MozillaBuildSource(models.Model):
+    mozilla_package = models.ForeignKey('MozillaPackage', blank=False, null=False)
+    remote_package_name = models.CharField(max_length=128, blank=True, null=True)
+    local_package_name = models.CharField(max_length=128, blank=True, null=True)
+    build_source_file = models.ForeignKey('MozillaBuildSourceFile', blank=True, null=True)
+    build_type = models.CharField(max_length=128)
+
+    class Meta:
+        db_table = 'mozilla_build_source'
+
+    def get_absolute_url(self):
+        return '%s%s' % (MEDIA_URL, self.source_file)
+
+    def save(self, *args, **kwargs):
+        super(MozillaBuildSource, self).save(*args, **kwargs)
+
 class MozillaPackageBuild(models.Model):
     mozilla_package = models.ForeignKey('MozillaPackage', blank=False, null=False)
     arch_type = models.CharField(max_length=128)
@@ -168,13 +185,30 @@ class MozillaPackageLog(models.Model):
         db_table = 'mozilla_package_log'
 
 
+class MozillaBuildSourcePackageDependency(models.Model):
+    mozilla_build_source = models.ForeignKey('MozillaBuildSource', null=False, blank=False)
+    name = models.CharField(max_length=128)
+
+    class Meta:
+        db_table = 'mozilla_build_source_package_dependency'
+
+
+class MozillaBuildSourceSystemDependency(models.Model):
+    mozilla_build_source = models.ForeignKey('MozillaBuildSource', null=False, blank=False)
+    name = models.CharField(max_length=128)
+
+    class Meta:
+        db_table = 'mozilla_build_source_system_dependency'
+
+
 class MozillaPackageDependency(models.Model):
     mozilla_package = models.ForeignKey('MozillaPackageBuild', null=False, blank=False)
     name = models.CharField(max_length=128)
 
-
     class Meta:
         db_table = 'mozilla_package_dependency'
+
+
 class MozillaPackageSystemDependency(models.Model):
     mozilla_package = models.ForeignKey('MozillaPackageBuild', null=False, blank=False)
     name = models.CharField(max_length=128)
