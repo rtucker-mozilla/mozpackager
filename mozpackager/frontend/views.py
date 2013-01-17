@@ -55,6 +55,20 @@ def detail(request, id):
                 'package': instance },
             RequestContext(request) )
 
+def delete_build_source(request, id):
+    return_dict = {}
+    return_dict['status'] = 'OK'
+    try:
+        build_source = models.MozillaBuildSource.objects.get(id=id)
+        build_source.delete()
+        return_dict['message'] = 'Build Source Deleted'
+    except models.MozillaBuildSource.DoesNotExist:
+        return_dict['status'] = 'FAIL'
+        return_dict['message'] = 'Could not find Build Source with id: %s' % id
+
+
+    return HttpResponse(json.dumps(return_dict))
+
 def get_build_sources(request, id):
     return_dict = {}
     try:

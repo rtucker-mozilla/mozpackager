@@ -21,120 +21,44 @@ post_data = {
         'output_type': 'rpm',
         'rhel_version': '6',
         }
-class TestMozPackage(TestCase):
+
+class TestDeleteBuildSource(TestCase):
     def setUp(self):
-        self.upload_file_name = 'fibreutils-2.5-4.x86_64.rpm'
-        self.post_data = post_data
+        pass
 
-    def testArchPost(self):
-        rf = RequestFactory()
-        r = rf.post('/upload/', {'arch_type': 'i386'})
-        mp = MozPackage(r)
-        self.assertEqual(mp.arch, 'i386')
-        r = rf.post('/upload/', {'arch_type': 'x86_64'})
-        mp = MozPackage(r)
-        self.assertEqual(mp.arch, 'x86_64')
+    def tearDown(self):
+        pass
 
-    def testOutputPost(self):
-        rf = RequestFactory()
-        r = rf.post('/upload/', {'output_type': 'deb'})
-        mp = MozPackage(r)
-        self.assertEqual(mp.output_type, 'deb')
+    def testURIExists(self):
+        c = Client()
+        mozilla_package_id = create_dummy_mozilla_package()
+        resp = c.get('/en-US/delete_build_source/%s/' % mozilla_package_id, follow=True)
+        self.assertEqual(resp.status_code, 200)
 
-    def testInputPost(self):
-        rf = RequestFactory()
-        r = rf.post('/upload/', {'input_type': 'tar-gz'})
-        mp = MozPackage(r)
-        self.assertEqual(mp.input_type, 'tar-gz')
+    def testDeleteBadBuildSource(self):
+        c = Client()
+        resp = c.get('/en-US/delete_build_source/%s/' % 1, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['status'], 'FAIL')
+        self.assertEqual(obj['message'], 'Could not find Build Source with id: 1')
 
-    def testOSVersionPost(self):
-        rf = RequestFactory()
-        r = rf.post('/upload/', {'output_type': 'rpm'})
-        mp = MozPackage(r)
-        self.assertEqual(mp.output_type, 'rpm')
-        self.assertEqual(mp.os, 'RHEL')
 
-    def testPackageNamePost(self):
-        rf = RequestFactory()
-        r = rf.post('/upload/', {'install_package_name': 'test-package-name'})
-        mp = MozPackage(r)
-        self.assertEqual(mp.install_package_name, 'test-package-name')
-
-    def testPackageVersionPost(self):
-        rf = RequestFactory()
-        r = rf.post('/upload/', {'install_package_name': 'test-package-version'})
-        mp = MozPackage(r)
-        self.assertEqual(mp.install_package_name, 'test-package-version')
-
-    def testPrefixDirPost(self):
-        rf = RequestFactory()
-        r = rf.post('/upload/', {'prefix_dir': 'test-prefix-dir'})
-        mp = MozPackage(r)
-        self.assertEqual(mp.prefix_dir, 'test-prefix-dir')
-
-    def testApplicationGroupPost(self):
-        rf = RequestFactory()
-        r = rf.post('/upload/', {'application_group': 'test-application-group'})
-        mp = MozPackage(r)
-        self.assertEqual(mp.application_group, 'test-application-group')
-
-    def testQueueGroupPost(self):
-        rf = RequestFactory()
-        r = rf.post('/upload/', self.post_data)
-        mp = MozPackage(r)
-        self.assertEqual(mp.queue, 'rhel-6-x86_64')
-
-    def testRoutingKeyGroupPost(self):
-        rf = RequestFactory()
-        r = rf.post('/upload/', self.post_data)
-        mp = MozPackage(r)
-        self.assertEqual(mp.routing_key, 'rhel-6-x86_64.build')
-
-    def testDependencyGroup(self):
-        deps = ['testDep1', 'testDep2', 'testDep3']
-        rf = RequestFactory()
-        r = rf.post('/upload/', {'dependencies': deps})
-        mp = MozPackage(r)
-        self.assertEqual(len(mp.dependencies), 3)
-        for i in range(0, len(deps) - 1):
-            self.assertTrue(deps[i] in mp.dependencies)
-
-    def testConflictsPost(self):
-        rf = RequestFactory()
-        r = rf.post('/upload/', {'conflicts': 'test-conflict-one'})
-        mp = MozPackage(r)
-        self.assertEqual(mp.conflicts, 'test-conflict-one')
-
-    def testProvidesPost(self):
-        rf = RequestFactory()
-        r = rf.post('/upload/', {'provides': 'test-provides'})
-        mp = MozPackage(r)
-        self.assertEqual(mp.provides, 'test-provides')
-
-    def testPackageURL(self):
-        rf = RequestFactory()
-        r = rf.post('/upload/', {'package_url': 'test-package_url'})
-        mp = MozPackage(r)
-        self.assertEqual(mp.package_url, 'test-package_url')
-
-    def testUploadPackage(self):
-        try:
-            os.remove('/tmp/%s' % self.upload_file_name)
-        except OSError:
-            """
-                The file does not exist, so it cannot be removed
-            """
-            pass
-        self.assertEqual(os.path.exists(self.upload_file_name), False)
-        cwd = os.path.dirname(os.path.abspath(__file__))
-        self.post_data['upload_package'] = open(cwd + '/fixtures/fibreutils-2.5-4.x86_64.rpm', 'rb')
-        r = {}
-        r['upload_package'] = open(cwd + '/fixtures/fibreutils-2.5-4.x86_64.rpm', 'rb')
-        r['upload_package_file_name'] = 'fibreutils-2.5-4.x86_64.rpm'
-        mp = MozPackage(r)
-        self.assertEqual(mp.upload_package_file_name, self.upload_file_name)
-        self.assertEqual(os.path.exists('/tmp/' + self.upload_file_name), True)
-
+    def testDeleteGoodBuildSource(self):
+        mozilla_package_id = create_dummy_mozilla_package()
+        mp = models.MozillaPackage.objects.get(id=mozilla_package_id)
+        bs = models.MozillaBuildSource(mozilla_package=mp,
+                remote_package_name = 'django-tastypie',
+                build_type = 'python',)
+        bs.save()
+        c = Client()
+        self.assertEqual(len(models.MozillaBuildSource.objects.all()), 1)
+        resp = c.get('/en-US/delete_build_source/%s/' % bs.id, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['status'], 'OK')
+        self.assertEqual(obj['message'], 'Build Source Deleted')
+        self.assertEqual(len(models.MozillaBuildSource.objects.all()), 0)
 
 class TestBuildSourceListAjax(TestCase):
     def setUp(self):

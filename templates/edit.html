@@ -148,7 +148,7 @@
                                         {% endif %}
                                         <td>{{ bs.package_dependency_string }}</td>
                                         <td>{{ bs.system_dependency_string }}</td>
-                                        <td><a href="{{ bs.get_build_url() }}">Build</a> | <a href="{{ bs.get_delete_url() }}">Delete</a></td>
+                                        <td><a class='build_source' rel="{{ bs.id }}" href="#">Build</a> | <a class='delete_source' rel="{{ bs.id }}" href="#">Delete</a></td>
                                     </tr>
 
                                 {% endfor %}
@@ -251,7 +251,7 @@
             }
             tr_string += '<td>' + element['package_dependencies'] + '</td>';
             tr_string += '<td>' + element['system_dependencies'] + '</td>';
-            tr_string += '<td><a href="' + element['get_build_url'] + '">Build</a> | <a href="' + element['get_delete_url'] + '">Delete</a></td>';
+            tr_string += '<td><a rel="' + element['id'] + '" class="build_source" href="#">Build</a> | <a rel="' + element['id'] + '"class="delete_source" href="#">Delete</a></td>';
             tr_string += '</tr>';
             $("#build_sources_tbody").after(tr_string);
 
@@ -313,6 +313,27 @@
 
             $(document).on("click", ".remove_dependency", function(){
                     remove_dep($(this));
+            });
+
+            $(document).on("click", ".delete_source", function(){
+                var build_source_id = $(this).attr("rel");
+                $.get('/en-US/delete_build_source/' + build_source_id + '/',
+                    function(data){
+                        obj = $.parseJSON(data);
+                        if(obj['status'] == 'OK'){
+                            refresh_build_sources_list();
+                        } else {
+                            alert(obj['message']);
+                        }
+
+                    });
+                return false;
+                
+            });
+            $(document).on("click", ".build_source", function(){
+                var build_source_id = $(this).attr("rel");
+                alert(build_source_id);
+                return false;
             });
 
             $(document).on("click", ".remove_system_dependency", function(){
