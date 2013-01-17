@@ -128,28 +128,38 @@
                                     <tr id='build_source_table_header'>
                                         <th>Build Source Type</th>
                                         <th>Build Source</th>
-                                        <th>Package Dependencies</th>
-                                        <th>System Dependencies</th>
+                                        <th style='width: 200px;'>Package Dependencies</th>
+                                        <th style='width: 200px;'>System Dependencies</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
-                                <tr>
-                                    <td>.src.rpm</td>
-                                    <td>foo.bar.src.rpm</td>
-                                    <td>foo, bar, baz</td>
-                                    <td>openldap-devel</td>
-                                    <td><a href="#">Build</a> | <a href="#">Delete</a></td>
-                                </tr>
-                                <tfoot id='build_sources_tfoot'></tfoot>
-                            {% for package_build in instance.mozillapackagebuild_set.all() %}
+                                <tbody id='build_sources_tbody'>
+                                {% for bs in instance.mozillabuildsource_set.all().order_by('-id') %}
+                                    <tr class="build_source_list">
+                                        {% if bs.build_type  %}
+                                            <td>{{ bs.build_type }}</td>
+                                        {% else %}
+                                            <td>Uploaded File</td>
+                                        {% endif %}
+                                        {% if bs.build_source_file %}
+                                            <td>{{ bs.build_source_file.source_file|replace("uploads/", "") }}</td>
+                                        {% else %}
+                                            <td>{{ bs.remote_package_name }}</td>
+                                        {% endif %}
+                                        <td>{{ bs.package_dependency_string }}</td>
+                                        <td>{{ bs.system_dependency_string }}</td>
+                                        <td><a href="{{ bs.get_build_url() }}">Build</a> | <a href="{{ bs.get_delete_url() }}">Delete</a></td>
+                                    </tr>
 
-                            {% endfor %}
+                                {% endfor %}
+                                </tbody>
+                                <tfoot id='build_sources_tfoot'></tfoot>
                         </table>
                         </li>
                         <li id="buildnewTab">
                             <form method='post' action='.' name='build_new_source_form' id='build_new_source_form'>
                                 <span id='new_build_span_source' class='new_build_span'>
-                                    <div class='new_build_span_header'>Build Source</div>
+                                    <div class='new_build_span_header'>build source</div>
                                     <ul class='build_sources'>
                                         {% if instance.mozillabuildsourcefile_set.all()|count > 0 %}
                                             {% for upload in instance.mozillabuildsourcefile_set.all() %}
@@ -157,28 +167,27 @@
                                             {% endfor %}
                                             <br />
                                         {% endif %}
-                                        <li><input type='radio' value='gem' name='build_source' />GEM</li>
-                                        <li><input type='radio' value='python' name='build_source' />Python</li>
+                                        <li><input type='radio' value='gem' name='build_source' />gem</li>
+                                        <li><input type='radio' value='python' name='build_source' />python</li>
                                     </ul>
                                     <div id='remote_package_div'>
                                         <br style='clear: both;' />
-                                        <label id='remote_package_name_input_label' for='remote_package_name_input'>Remote Package Name:</label>
+                                        <label id='remote_package_name_input_label' for='remote_package_name_input'>remote package name:</label>
                                         <input type='text' class='required' id='remote_package_name_input' name='remote_package_name_input' value='' />
                                     </div>
                                     <br style='clear: both;' />
                                     <br style='clear: both;' />
-                                    <input id='save_build' style='float: left;' type='submit' class="postfix button" value='Save Build Configuration'>
+                                    <input id='save_build' style='float: left;' type='submit' class="postfix button" value='save build configuration'>
                                 </span>
                                 <span id='new_build_span_package_dependency' class='new_build_span'>
-                                    <div class='new_build_span_header'>Package Dependency</div>
-                                    <input id='add_dependency_button' style='float: left;' type='button' class="postfix button" value='Add Dependency'>
+                                    <div class='new_build_span_header'>package dependency</div>
+                                    <input id='add_dependency_button' style='float: left;' type='button' class="postfix button" value='add dependency'>
                                 </span>
                                 <span id='new_build_span_system_dependency' class='new_build_span'>
-                                    <div class='new_build_span_header'>System Dependency</div>
-                                    <input id='add_system_dependency_button' style='float: left;' type='button' class="postfix button" value='Add Dependency'>
+                                    <div class='new_build_span_header'>system dependency</div>
+                                    <input id='add_system_dependency_button' style='float: left;' type='button' class="postfix button" value='add dependency'>
                                 </span>
 
-                                </span>
                             </form>
                         </li>
                         <li id="buildsourceTab">
@@ -186,9 +195,9 @@
                                 {% if instance.mozillabuildsourcefile_set.all()|count > 0 %}
                                     <table>
                                         <tr>
-                                            <th>File Name</th>
-                                            <th>Input Type</th>
-                                            <th>Download</th>
+                                            <th>file name</th>
+                                            <th>input type</th>
+                                            <th>download</th>
                                         </tr>
                                     {% for upload in instance.mozillabuildsourcefile_set.all() %}
                                         <tr>
@@ -215,6 +224,7 @@
 {% block extra_footer %}
 <script type="text/javascript">
         $(document).foundationTabs();
+        package_id = {{ instance.id }};
         function init(){
                     jQuery("#id_rhel_version").show();
                     jQuery("#rhel_version_label").show();
@@ -230,6 +240,39 @@
             dependency_count++;
         }
 
+        function append_build_source(element, index, array){
+            tr_string = '<tr class="build_source_list">';
+            if(element['build_source_type']){
+                tr_string += '<td>' + element['build_source_type'] + '</td>';
+                tr_string += '<td>' + element['remote_package_name'] + '</td>';
+            } else {
+                tr_string += '<td>Uploaded File</td>';
+                tr_string += '<td>' + element['build_source_file_name'] + '</td>';
+            }
+            tr_string += '<td>' + element['package_dependencies'] + '</td>';
+            tr_string += '<td>' + element['system_dependencies'] + '</td>';
+            tr_string += '<td><a href="' + element['get_build_url'] + '">Build</a> | <a href="' + element['get_delete_url'] + '">Delete</a></td>';
+            tr_string += '</tr>';
+            $("#build_sources_tbody").after(tr_string);
+
+        }
+        function refresh_build_sources_list(){
+            $.get('/get_build_sources/' + package_id + '/',
+                    function(data){
+                        $(".build_source_list").remove();
+                        obj = $.parseJSON(data);
+                        if(obj['status'] == 'OK'){
+                            obj['sources'].forEach(append_build_source);
+                        } else {
+                            alert('Refresh Failed: ' + obj['message']);
+
+                        }
+
+                    }
+            );
+            return true;
+        }
+
 
         function add_system_dependency(){
             var add_string = '<div class="dep_wrapper" style="clear: both;"><label>Dependency:</label>';
@@ -240,13 +283,13 @@
         }
 
         function add_build_source(json_string){
+            refresh_build_sources_list();
             console.log(json_string);
 
         }
         $(document).ready(function(){
             dependency_count = {{ dependency_count }};
             system_dependency_count = {{ system_dependency_count }};
-            package_id = {{ instance.id }};
 
             //init();
             $("#id_output_type").change(function(){
@@ -344,10 +387,9 @@
                         url: '/en-US/add_build_source/' + package_id + '/',
                         data: post_data,
                         success: function(){
-                            alert("Got to success");
-                            $("a[href=#buildsources]").click();
                             reset_add_source_form();
                             add_build_source(post_data);
+                            $("a[href=#buildsources]").click();
                         },
                         dataType: 'json'
                     });

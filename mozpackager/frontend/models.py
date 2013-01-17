@@ -37,6 +37,27 @@ class MozillaBuildSource(models.Model):
     build_source_file = models.ForeignKey('MozillaBuildSourceFile', blank=True, null=True)
     build_type = models.CharField(max_length=128)
 
+    def get_build_url(self):
+        return '/en-US/build_source_build/%s/' % self.id
+
+    def get_delete_url(self):
+        return '/en-US/build_source_delete/%s/' % self.id
+
+    @property
+    def package_dependency_string(self):
+        if len(self.mozillabuildsourcepackagedependency_set.all()) > 0:
+            package_dependency_string = ", ".join([s.name for s in self.mozillabuildsourcepackagedependency_set.all()])
+        else:
+            package_dependency_string = ""
+        return package_dependency_string
+
+    @property
+    def system_dependency_string(self):
+        if len(self.mozillabuildsourcesystemdependency_set.all()) > 0:
+            system_dependency_string = ", ".join([s.name for s in self.mozillabuildsourcesystemdependency_set.all()])
+        else:
+            system_dependency_string = ""
+        return system_dependency_string
     class Meta:
         db_table = 'mozilla_build_source'
 
@@ -45,6 +66,22 @@ class MozillaBuildSource(models.Model):
 
     def save(self, *args, **kwargs):
         super(MozillaBuildSource, self).save(*args, **kwargs)
+
+class MozillaBuildSourcePackageDependency(models.Model):
+    mozilla_build_source = models.ForeignKey('MozillaBuildSource', null=False, blank=False)
+    name = models.CharField(max_length=128)
+
+    class Meta:
+        db_table = 'mozilla_build_source_package_dependency'
+
+
+class MozillaBuildSourceSystemDependency(models.Model):
+    mozilla_build_source = models.ForeignKey('MozillaBuildSource', null=False, blank=False)
+    name = models.CharField(max_length=128)
+
+    class Meta:
+        db_table = 'mozilla_build_source_system_dependency'
+
 
 class MozillaPackageBuild(models.Model):
     mozilla_package = models.ForeignKey('MozillaPackage', blank=False, null=False)
@@ -185,34 +222,3 @@ class MozillaPackageLog(models.Model):
         db_table = 'mozilla_package_log'
 
 
-class MozillaBuildSourcePackageDependency(models.Model):
-    mozilla_build_source = models.ForeignKey('MozillaBuildSource', null=False, blank=False)
-    name = models.CharField(max_length=128)
-
-    class Meta:
-        db_table = 'mozilla_build_source_package_dependency'
-
-
-class MozillaBuildSourceSystemDependency(models.Model):
-    mozilla_build_source = models.ForeignKey('MozillaBuildSource', null=False, blank=False)
-    name = models.CharField(max_length=128)
-
-    class Meta:
-        db_table = 'mozilla_build_source_system_dependency'
-
-
-class MozillaPackageDependency(models.Model):
-    mozilla_package = models.ForeignKey('MozillaPackageBuild', null=False, blank=False)
-    name = models.CharField(max_length=128)
-
-    class Meta:
-        db_table = 'mozilla_package_dependency'
-
-
-class MozillaPackageSystemDependency(models.Model):
-    mozilla_package = models.ForeignKey('MozillaPackageBuild', null=False, blank=False)
-    name = models.CharField(max_length=128)
-
-
-    class Meta:
-        db_table = 'mozilla_system_dependency'

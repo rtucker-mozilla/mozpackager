@@ -70,20 +70,15 @@ def get_build_sources(request, id):
         tmp['id'] = source.id
         tmp['build_source_type'] = source.build_type
         tmp['build_source'] = source.remote_package_name
-
-        if len(source.mozillabuildsourcesystemdependency_set.all()) > 0:
-            system_dependency_string = ", ".join([s.name for s in source.mozillabuildsourcesystemdependency_set.all()])
+        tmp['system_dependencies'] = source.system_dependency_string
+        tmp['package_dependencies'] = source.package_dependency_string
+        tmp['remote_package_name'] = source.remote_package_name
+        tmp['get_build_url'] = source.get_build_url()
+        tmp['get_delete_url'] = source.get_delete_url()
+        if source.build_source_file:
+            tmp['build_source_file_name'] = str(source.build_source_file.source_file).replace("uploads/", "")
         else:
-            system_dependency_string = ""
-
-        if len(source.mozillabuildsourcepackagedependency_set.all()) > 0:
-            package_dependency_string = ", ".join([s.name for s in source.mozillabuildsourcepackagedependency_set.all()])
-        else:
-            package_dependency_string = ""
-
-        tmp['system_dependencies'] = system_dependency_string
-        tmp['package_dependencies'] = package_dependency_string
-
+            tmp['build_source_file_name'] = ''
         return_dict['sources'].append(tmp)
 
     return HttpResponse(json.dumps(return_dict))
@@ -108,9 +103,9 @@ def add_build_source(request, id):
             mozilla_build_source.build_source_file = build_source_file
         else:
             mozilla_build_source.build_type = build_source
-
-
+            mozilla_build_source.build_source_file = None
         mozilla_build_source.save()
+
         system_dependencies = request.POST.getlist('system_dependency[]', [])
         package_dependencies = request.POST.getlist('dependency[]', [])
         for p in system_dependencies:
