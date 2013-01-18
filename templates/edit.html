@@ -340,8 +340,23 @@
                         {
                             text: 'Build',
                             click: function(){
-                                alert(build_source_id);
                                 alert('fire async call to build here');
+                                $.post('/build_from_build_source/' + build_source_id + '/',
+                                    { 
+                                        'build_type': $("#build_source_form_type").val(),
+                                        'arch_type': $("#build_source_form_arch_type").val()
+                                    },
+                                    function(data){
+                                        var obj = $.parseJSON(data);
+                                            if(obj['status'] == 'OK'){
+                                                alert("Build Started");
+                                            } else {
+                                                alert('Build Failed: ' + obj['message']);
+
+                                            }
+                                    }
+                                );
+
                                 $("#build_source_form_div").dialog('close');
 
                             }
@@ -512,9 +527,19 @@
             <tr>
                 <td style='vertical-align: middle;'>Output Type</td>
                 <td>
-                    <select style='padding: none;' >
+                    <select name='build_source_form_type' id='build_source_form_type' style='padding: none;' >
                         <option value='rpm'>.rpm</option>
                         <option value='deb'>.deb</option>
+                    
+                    </select>
+                </td>
+            </tr> 
+            <tr>
+                <td style='vertical-align: middle;'>Arch Type</td>
+                <td>
+                    <select name='build_source_form_arch_type' id='build_source_form_arch_type' style='padding: none;' >
+                        <option value='i386'>i386</option>
+                        <option value='x86_64'>x86_64</option>
                     
                     </select>
                 </td>

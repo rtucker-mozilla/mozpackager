@@ -55,6 +55,26 @@ def detail(request, id):
                 'package': instance },
             RequestContext(request) )
 
+def build_from_build_source(request, id):
+    return_dict = {}
+    return_dict['status'] = 'OK'
+    return_dict['message'] = 'No Post Received'
+    if request.method == 'POST':
+        try:
+            build_source = models.MozillaBuildSource.objects.get(id=id)
+            package_build = models.MozillaPackageBuild()
+            package_build.mozilla_package = build_source.mozilla_package
+            package_build.arch_type = request.POST.get('arch_type')
+            package_build.output_type = request.POST.get('build_type')
+            package_build.save()
+            return_dict['message'] = 'Build Source Created'
+        except models.MozillaBuildSource.DoesNotExist:
+            return_dict['status'] = 'FAIL'
+            return_dict['message'] = 'Could not find Build Source with id: %s' % id
+
+
+    return HttpResponse(json.dumps(return_dict))
+
 def delete_build_source(request, id):
     return_dict = {}
     return_dict['status'] = 'OK'

@@ -22,6 +22,41 @@ post_data = {
         'rhel_version': '6',
         }
 
+class TestBuildFromBuildSource(TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def testURIExists(self):
+        c = Client()
+        mozilla_package_id = create_dummy_mozilla_package()
+        mp = models.MozillaPackage.objects.get(id=mozilla_package_id)
+        bs = models.MozillaBuildSource(mozilla_package=mp,
+                remote_package_name = 'django-tastypie',
+                build_type = 'python',)
+        bs.save()
+        resp = c.get('/en-US/build_from_build_source/%s/' % bs.id, follow=True)
+        self.assertEqual(resp.status_code, 200)
+
+    def testBuildFromSourceCreatesModelObject(self):
+        self.assertEqual(len(models.MozillaPackageBuild.objects.all()), 0)
+        c = Client()
+        mozilla_package_id = create_dummy_mozilla_package()
+        mp = models.MozillaPackage.objects.get(id=mozilla_package_id)
+        bs = models.MozillaBuildSource(mozilla_package=mp,
+                remote_package_name = 'django-tastypie',
+                build_type = 'python',)
+        bs.save()
+        post_data = {
+                'arch_type': 'x86_64',
+                'build_type': 'rpm',
+                }
+        resp = c.post('/en-US/build_from_build_source/%s/' % bs.id, data=post_data, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(models.MozillaPackageBuild.objects.all()), 1)
+
 class TestDeleteBuildSource(TestCase):
     def setUp(self):
         pass
