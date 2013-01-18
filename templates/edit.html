@@ -332,7 +332,31 @@
             });
             $(document).on("click", ".build_source", function(){
                 var build_source_id = $(this).attr("rel");
-                alert(build_source_id);
+                $("#build_source_id_ajax").val(build_source_id);
+                $("#build_source_form_div").dialog({
+                    title: 'Build From Source',
+                    width: 440,
+                    buttons: [
+                        {
+                            text: 'Build',
+                            click: function(){
+                                alert(build_source_id);
+                                alert('fire async call to build here');
+                                $("#build_source_form_div").dialog('close');
+
+                            }
+                        },
+                        {
+                            text: 'Cancel',
+                            click: function(){
+                                $("#build_source_form_div").dialog('close');
+                            }
+                        }
+
+                    ]
+                    
+                    
+                });
                 return false;
             });
 
@@ -476,18 +500,30 @@
             $('#save_build').click(function(){
                 var post_data = serialize_build_source_form();
                 $("#build_new_source_form").submit();
-                /*if($("#build_new_source_form").validate()){
-                    alert("Validated");
-                    $("a[href=#buildsources]").click();
-                    reset_add_source_form();
-                } else {
-                    alert('Validation failed');
-
-                }*/
                 return false;
             });
 
 
         });
 </script>
+<div id='build_source_form_div' style='display: none;'>
+    <table>
+        <form>
+            <tr>
+                <td style='vertical-align: middle;'>Output Type</td>
+                <td>
+                    <select style='padding: none;' >
+                        <option value='rpm'>.rpm</option>
+                        <option value='deb'>.deb</option>
+                    
+                    </select>
+                </td>
+            </tr> 
+            <input type='hidden' name='build_source_id_ajax' id='build_source_id_ajax' value='' />
+
+        <form>
+    </table>
+
+
+</div>
 {% endblock %}
