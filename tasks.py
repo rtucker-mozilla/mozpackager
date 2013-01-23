@@ -23,9 +23,9 @@ def build_package(package_id=None):
         the variable will be the flag
     """
     should_kill_mock = False
-    mozilla_package = models.MozillaPackage.objects.get(id=package_id)
+    build_source = models.MozillaBuildSource.objects.get(id=package_id)
     log.debug('Mozilla Package: %s' % mozilla_package)
-    mock_environment = Mock(mozilla_package)
+    mock_environment = Mock(build_source)
     mock_environment.build_mock()
     mock_environment.install_packages()
     mock_environment.install_build_file()

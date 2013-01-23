@@ -61,11 +61,22 @@ def build_from_build_source(request, id):
     return_dict['message'] = 'No Post Received'
     if request.method == 'POST':
         try:
+            test = request.POST.get('test', False)
             build_source = models.MozillaBuildSource.objects.get(id=id)
             package_build = models.MozillaPackageBuild()
             package_build.mozilla_package = build_source.mozilla_package
             package_build.arch_type = request.POST.get('arch_type')
             package_build.output_type = request.POST.get('build_type')
+            package_build.save()
+
+            if not test:
+                result = build_package.apply_async(args=[],kwargs = { 'build_source_id': package_build.id},
+                        queue='rhel-6-x86_64',
+                        routing_key='rhel-6-x86_64.build')
+            else:
+                import random, string
+                result = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
+            package_build.celery_id = result
             package_build.save()
             return_dict['message'] = 'Build Source Created'
         except models.MozillaBuildSource.DoesNotExist:

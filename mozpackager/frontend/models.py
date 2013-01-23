@@ -58,6 +58,7 @@ class MozillaBuildSource(models.Model):
         else:
             system_dependency_string = ""
         return system_dependency_string
+
     class Meta:
         db_table = 'mozilla_build_source'
 
@@ -82,6 +83,30 @@ class MozillaBuildSourceSystemDependency(models.Model):
     class Meta:
         db_table = 'mozilla_build_source_system_dependency'
 
+class MozillaPackage(models.Model):
+    name = models.CharField(max_length=128)
+    version = models.CharField(max_length=128)
+    release = models.CharField(max_length=128)
+    vendor = models.CharField(max_length=128, blank=True, null=True)
+    package_url = models.CharField(max_length=128, blank=True, null=True)
+    application_group = models.CharField(max_length=128)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'mozilla_package'
+        unique_together = (
+                'name',
+                'version',
+
+                )
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.created_on = datetime.datetime.now()
+        self.updated_on = datetime.datetime.now()
+        super(MozillaPackage, self).save(*args, **kwargs)
+
 
 class MozillaPackageBuild(models.Model):
     mozilla_package = models.ForeignKey('MozillaPackage', blank=False, null=False)
@@ -102,6 +127,7 @@ class MozillaPackageBuild(models.Model):
     conflicts = models.CharField(max_length=128)
     provides = models.CharField(max_length=128)
     prefix_dir = models.CharField(max_length=128)
+    celery_id = models.CharField(max_length=128, null=True, blank=True)
     search_fields = (
             'arch_type',
             'package'
@@ -179,29 +205,6 @@ class MozillaPackageBuild(models.Model):
                 log_type = log_type,
                 log_message = log_message).save()
 
-class MozillaPackage(models.Model):
-    name = models.CharField(max_length=128)
-    version = models.CharField(max_length=128)
-    release = models.CharField(max_length=128)
-    vendor = models.CharField(max_length=128, blank=True, null=True)
-    package_url = models.CharField(max_length=128, blank=True, null=True)
-    application_group = models.CharField(max_length=128)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    class Meta:
-        db_table = 'mozilla_package'
-        unique_together = (
-                'name',
-                'version',
-
-                )
-
-    def save(self, *args, **kwargs):
-        if not self.id:
-            self.created_on = datetime.datetime.now()
-        self.updated_on = datetime.datetime.now()
-        super(MozillaPackage, self).save(*args, **kwargs)
 
 class MozillaPackageLog(models.Model):
     mozilla_package_build = models.ForeignKey('MozillaPackageBuild', null=False, blank=False)
