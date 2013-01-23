@@ -22,6 +22,13 @@ post_data = {
         'rhel_version': '6',
         }
 
+class TestBuildSourceBuildFile(TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
 class TestBuildFromBuildSource(TestCase):
     def setUp(self):
         pass
