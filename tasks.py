@@ -14,7 +14,7 @@ import logging
 import commonware.log
 log = commonware.log.getLogger('celery')
 @task(name='build_package')
-def build_package(package_id=None):
+def build_package(package_build_id=None):
     """
         Placeholder variable should_kill_mock
         Since I have implemented a timeout exception block
@@ -23,9 +23,9 @@ def build_package(package_id=None):
         the variable will be the flag
     """
     should_kill_mock = False
-    build_source = models.MozillaBuildSource.objects.get(id=package_id)
-    log.debug('Mozilla Package: %s' % mozilla_package)
-    mock_environment = Mock(build_source)
+    build_package = models.MozillaPackageBuild.objects.get(id=package_build_id)
+    log.debug('Mozilla Package: %s' % build_package.mozilla_package)
+    mock_environment = Mock(build_package)
     mock_environment.build_mock()
     mock_environment.install_packages()
     mock_environment.install_build_file()
@@ -48,7 +48,7 @@ def build_package(package_id=None):
     successful_build = False
     build_status = 'Failed'
     try:
-        mock_environment.build_package()
+        mock_environment.compile_package()
         successful_build = True
     except TimeLimitExceeded:
         should_kill_mock = True
@@ -60,24 +60,24 @@ def build_package(package_id=None):
         Always capture and save the error_log
     """
     error_log = mock_environment.error_log
-    mozilla_package.add_log('ERROR', error_log)
+    build_package.add_log('ERROR', error_log)
     if successful_build:
         build_log = mock_environment.build_log
         path = mock_environment.build_path
         log.debug('Task: build_package. Path is %s' % path)
         if path != '' and path is not None:
-            mozilla_package.add_log('INFO', 'Built File %s' % path)
+            build_package.add_log('INFO', 'Built File %s' % path)
             build_status = 'Completed'
-            mozilla_package.add_log('INFO', build_log)
+            build_package.add_log('INFO', build_log)
             mock_environment.copyout_built_package(path, BUILD_DIR)
         else:
             build_status = 'Failed'
 
-        mozilla_package.add_log('INFO', 'Build %s' % build_status)
-        mozilla_package.build_status = build_status
-        mozilla_package.build_package_name = path
+        build_package.add_log('INFO', 'Build %s' % build_status)
+        build_package.build_status = build_status
+        build_package.build_package_name = path
 
-    mozilla_package.save()
+    build_package.save()
 
 
 @task(name='build_mock_environment')

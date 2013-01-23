@@ -8,7 +8,7 @@ class Mock:
     _error_log_text = None
 
 
-    def __init__(self, mozpackage):
+    def __init__(self, build_package):
 
         """
             Perhaps pull these dynamically at some point
@@ -18,7 +18,9 @@ class Mock:
 
         self.arch = 'x86_64'
         self.root = 'mozilla-6-x86_64'
-        self.mozpackage = mozpackage
+        self.build_package = build_package
+        self.mozpackage = build_package.mozilla_package
+        self.build_source = build_package.build_source
         self.required_install_packages = [
                 'zeroinstall-injector',
                 'ruby-devel',
@@ -56,7 +58,7 @@ class Mock:
         """
 
     def install_build_file(self):
-        build_file_content = self.mozpackage.generate_build_file_content()
+        build_file_content = self.build_package.generate_build_file_content()
         fh = open('/tmp/build_package.sh', 'w')
         fh.write(build_file_content)
         fh.close()
@@ -157,7 +159,7 @@ class Mock:
             '/usr/lib/ruby/gems/1.8/gems/fpm-0.4.24/lib/fpm/package/rpm.rb')
 
     def copyin_source_file(self):
-        upload_file = self.mozpackage.upload_package_file_name
+        upload_file = self.build_source.build_source_file
         if upload_file and upload_file != '':
             self._copyin('/tmp/%s' % upload_file, '/')
 
@@ -197,14 +199,14 @@ class Mock:
         return output_log
 
     def install_packages(self, additional_packages = []):
-        if len(self.mozpackage.mozillapackagesystemdependency_set.all()) > 0:
-            for dep in self.mozpackage.mozillapackagesystemdependency_set.all():
+        if len(self.build_source.mozillabuildsourcesystemdependency_set.all()) > 0:
+            for dep in self.build_source.mozillabuildsourcesystemdependency_set.all():
                 additional_packages.append(dep.name)
         else:
             additional_packages = []
         self._install_packages(self.required_install_packages + additional_packages)
 
-    def build_package(self):
+    def compile_package(self):
         """
             He we'll copy in the file that will actually build the package
         """

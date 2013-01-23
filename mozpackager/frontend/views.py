@@ -55,6 +55,7 @@ def detail(request, id):
                 'package': instance },
             RequestContext(request) )
 
+@csrf_exempt
 def build_from_build_source(request, id):
     return_dict = {}
     return_dict['status'] = 'OK'
@@ -71,7 +72,7 @@ def build_from_build_source(request, id):
             package_build.save()
 
             if not test:
-                result = build_package.apply_async(args=[],kwargs = { 'build_source_id': package_build.id},
+                result = build_package.apply_async(args=[],kwargs = { 'package_build_id': package_build.id},
                         queue='rhel-6-x86_64',
                         routing_key='rhel-6-x86_64.build')
             else:

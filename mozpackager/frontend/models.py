@@ -18,7 +18,7 @@ mkdir /tmp/build
 class MozillaBuildSourceFile(models.Model):
     mozilla_package = models.ForeignKey('MozillaPackage', blank=False, null=False)
     source_file = models.FileField(upload_to='uploads/')
-    input_type = models.CharField(max_length=128)
+    input_type = models.CharField(max_length=128, default='')
 
     class Meta:
         db_table = 'mozilla_package_source_file'
@@ -35,7 +35,7 @@ class MozillaBuildSource(models.Model):
     remote_package_name = models.CharField(max_length=128, blank=True, null=True)
     local_package_name = models.CharField(max_length=128, blank=True, null=True)
     build_source_file = models.ForeignKey('MozillaBuildSourceFile', blank=True, null=True)
-    build_type = models.CharField(max_length=128)
+    build_type = models.CharField(max_length=128, default='')
 
     def get_build_url(self):
         return '/en-US/build_source_build/%s/' % self.id
@@ -135,13 +135,13 @@ class MozillaPackageBuild(models.Model):
 
     @property
     def input_type(self):
-        return self.build_source.build_type
+        return self.build_source.build_type if self.build_source.build_type else ''
 
     @property
     def package_version(self):
         return self.mozilla_package.version
-    class Meta:
 
+    class Meta:
         db_table = 'mozilla_package_build'
 
     def save(self, *args, **kwargs):

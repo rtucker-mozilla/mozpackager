@@ -340,8 +340,7 @@
                         {
                             text: 'Build',
                             click: function(){
-                                alert('fire async call to build here');
-                                $.post('/build_from_build_source/' + build_source_id + '/',
+                                $.post('/en-US/build_from_build_source/' + build_source_id + '/',
                                     { 
                                         'build_type': $("#build_source_form_type").val(),
                                         'arch_type': $("#build_source_form_arch_type").val()
