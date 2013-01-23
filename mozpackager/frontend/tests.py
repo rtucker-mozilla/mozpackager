@@ -35,7 +35,8 @@ class TestMozillaPackageBuild(TestCase):
         self.bs.save()
 
     def tearDown(self):
-        pass
+        self.mp = None
+        self.bs = None
 
     def create_package_build(self):
         package_build = models.MozillaPackageBuild()
