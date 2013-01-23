@@ -110,6 +110,7 @@ class MozillaPackage(models.Model):
 
 class MozillaPackageBuild(models.Model):
     mozilla_package = models.ForeignKey('MozillaPackage', blank=False, null=False)
+    build_source = models.ForeignKey('MozillaBuildSource', blank=False, null=False)
     arch_type = models.CharField(max_length=128)
     output_type = models.CharField(max_length=128)
     build_package_name = models.CharField(max_length=128, blank=True, null=True)

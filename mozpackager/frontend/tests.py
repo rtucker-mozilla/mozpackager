@@ -22,12 +22,43 @@ post_data = {
         'rhel_version': '6',
         }
 
-class TestBuildSourceBuildFile(TestCase):
+class TestMozillaPackageBuild(TestCase):
     def setUp(self):
-        pass
+        """
+            Create some dummy objects to be used throughout the tests
+        """
+        self.mozilla_package_id = create_dummy_mozilla_package()
+        self.mp = models.MozillaPackage.objects.get(id=self.mozilla_package_id)
+        self.bs = models.MozillaBuildSource(mozilla_package=self.mp,
+                remote_package_name = 'django-tastypie',
+                build_type = 'python',)
+        self.bs.save()
 
     def tearDown(self):
         pass
+
+    def create_package_build(self):
+        package_build = models.MozillaPackageBuild()
+        package_build.mozilla_package = self.mp
+        package_build.arch_type = 'x86_64'
+        package_build.build_source = self.bs
+        package_build.save()
+        return package_build
+
+    def test1_packagebuildcreates(self):
+        pb = self.create_package_build()
+        self.assertEqual(pb.arch_type, 'x86_64')
+        self.assertEqual(pb.build_source, self.bs)
+
+
+    def test2_packagebuild_mozillapackageattributes(self):
+        pb = self.create_package_build()
+        self.assertEqual(pb.mozilla_package.name, u'TestPackage')
+        self.assertEqual(pb.mozilla_package.version, u'1.1')
+        self.assertEqual(pb.mozilla_package.release, u'1')
+        self.assertEqual(pb.mozilla_package.application_group,
+                u'Development/Languages')
+
 
 class TestBuildFromBuildSource(TestCase):
     def setUp(self):

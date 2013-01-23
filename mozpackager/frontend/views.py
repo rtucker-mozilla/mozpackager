@@ -67,6 +67,7 @@ def build_from_build_source(request, id):
             package_build.mozilla_package = build_source.mozilla_package
             package_build.arch_type = request.POST.get('arch_type')
             package_build.output_type = request.POST.get('build_type')
+            package_build.build_source = build_source
             package_build.save()
 
             if not test:
