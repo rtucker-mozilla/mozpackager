@@ -116,7 +116,6 @@ class MozillaPackageBuild(models.Model):
     build_package_name = models.CharField(max_length=128, blank=True, null=True)
     build_status = models.CharField(max_length=128, blank=True, null=True)
     rhel_version = models.CharField(max_length=128)
-    input_type = models.CharField(max_length=128)
     upload_package_file_name = models.CharField(max_length=255, blank=True, null=True)
     """
         package has the label Remote Package
@@ -134,7 +133,15 @@ class MozillaPackageBuild(models.Model):
             'package'
         )
 
+    @property
+    def input_type(self):
+        return self.build_source.build_type
+
+    @property
+    def package_version(self):
+        return self.mozilla_package.version
     class Meta:
+
         db_table = 'mozilla_package_build'
 
     def save(self, *args, **kwargs):
@@ -151,8 +158,8 @@ class MozillaPackageBuild(models.Model):
         """
         dependency_string = ""
         version_string = "-v %s" % self.package_version if self.package_version != '' else ""
-        if self.mozillapackagedependency_set:
-            for dep in self.mozillapackagedependency_set.all():
+        if self.build_source.mozillabuildsourcepackagedependency_set:
+            for dep in self.build_source.mozillabuildsourcepackagedependency_set.all():
                 dependency_string = "%s -d \"%s\"" % (dependency_string, dep.name)
 
         if self.input_type == 'python' or self.input_type == 'gem':
@@ -162,7 +169,7 @@ class MozillaPackageBuild(models.Model):
                     self.output_type,
                     version_string,
                     dependency_string,
-                    self.install_package_name,
+                    self.mozilla_package.name,
                     )
         elif self.input_type == 'rpm' or self.input_type =='deb':
             build_string = "setarch %s fpm -s %s -t %s %s %s %s" % (
@@ -190,7 +197,6 @@ class MozillaPackageBuild(models.Model):
             that can get added if no version or dependencies
         """
         build_string = re.sub('\s+', ' ', build_string)
-        print build_string
         return str(build_string)
 
     def generate_build_file_content(self):

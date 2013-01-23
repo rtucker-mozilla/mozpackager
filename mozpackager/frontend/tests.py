@@ -42,6 +42,7 @@ class TestMozillaPackageBuild(TestCase):
         package_build = models.MozillaPackageBuild()
         package_build.mozilla_package = self.mp
         package_build.arch_type = 'x86_64'
+        package_build.output_type = 'rpm'
         package_build.build_source = self.bs
         package_build.save()
         return package_build
@@ -59,6 +60,19 @@ class TestMozillaPackageBuild(TestCase):
         self.assertEqual(pb.mozilla_package.release, u'1')
         self.assertEqual(pb.mozilla_package.application_group,
                 u'Development/Languages')
+
+    def test3_packagebuild_buildsourceattributes(self):
+        pb = self.create_package_build()
+        self.assertEqual(pb.input_type, 'python')
+        self.assertEqual(pb.arch_type, 'x86_64')
+        self.assertEqual(pb.output_type, 'rpm')
+
+
+    def test3_generate_build_string_for_python_source(self):
+        pb = self.create_package_build()
+        self.assertEqual(pb.generate_build_string(),
+                'setarch x86_64 fpm -s python -t rpm -v 1.1 TestPackage')
+
 
 
 class TestBuildFromBuildSource(TestCase):
