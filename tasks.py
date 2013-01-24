@@ -63,7 +63,14 @@ def build_package(package_build_id=None):
     build_package.add_log('ERROR', error_log)
     if successful_build:
         build_log = mock_environment.build_log
-        path = mock_environment.build_path.lstrip('/')
+        path = mock_environment.build_path
+        """
+            When building .debs from pypi
+            the path has a leading /
+            remove it if path is not None
+        """
+        if path:
+            path = path.lstrip('/')
         log.debug('Task: build_package. Path is %s' % path)
         if path != '' and path is not None:
             build_package.add_log('INFO', 'Built File %s' % path)

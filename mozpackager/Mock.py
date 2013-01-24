@@ -1,5 +1,5 @@
 import subprocess
-from mozpackager.settings import BUILD_DIR, BUILD_LOG_DIR
+from mozpackager.settings import BUILD_DIR, BUILD_LOG_DIR, MEDIA_PATH
 import json
 class Mock:
     root = None
@@ -159,9 +159,13 @@ class Mock:
             '/usr/lib/ruby/gems/1.8/gems/fpm-0.4.24/lib/fpm/package/rpm.rb')
 
     def copyin_source_file(self):
-        upload_file = self.build_source.build_source_file
+        try:
+            upload_file = "%s/%s" % (MEDIA_PATH, self.build_source.build_source_file.source_file)
+        except:
+            upload_file = None
+
         if upload_file and upload_file != '':
-            self._copyin('/tmp/%s' % upload_file, '/')
+            self._copyin(upload_file, '/')
 
     def _copyout(self, path, destination='/tmp/'):
         cmd = [

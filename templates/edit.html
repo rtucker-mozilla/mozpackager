@@ -131,7 +131,7 @@
                                         <td>{{ package_build.build_source.build_type }}</td>
                                         <td>{{ package_build.build_status }}</td>
                                         <td><a href="#" class='view_build_logs' rel='{{ package_build.id }}'>View</a></td>
-                                        <td>{% if package_build.build_status == 'Completed' %}<a href="{{'frontend.download'|url(package_build.id) }}" class='' rel='3'>Download</a> | <a href="#" class='' rel='3'>Delete</a> {% else %} &nbsp; {% endif %}</td>
+                                        <td>{% if package_build.build_status == 'Completed'  or package_build.build_status == 'Failed' %}<a href="{{'frontend.download'|url(package_build.id) }}" class='' rel='{{ package_build.id }}'>Download</a> | <a href="#" class='delete_package_build' rel='{{ package_build.id }}'>Delete</a> {% else %} &nbsp; {% endif %}</td>
                                     </tr>
                                 </tbody>
 
@@ -278,8 +278,8 @@
             tr_string += '<td>' + element['build_source_type'] + '</td>';
             tr_string += '<td>' + element['build_status'] + '</td>';
             tr_string += '<td><a href="#" class="view_build_logs" rel="' + element['id'] + '">View</a></td>';
-            if(element['build_status'] == 'Completed'){
-                tr_string += '<td><a href="/en-US/download/' + element['id'] + '/" class="" rel="' + element['id'] + '">Download</a> | <a href="#" class="" rel="3">Delete</a></td>';
+            if(element['build_status'] == 'Completed' || element['build_status'] == 'Failed'){
+                tr_string += '<td><a href="/en-US/download/' + element['id'] + '/" class="" rel="' + element['id'] + '">Download</a> | <a href="#" class="delete_package_build" rel="' + element['id'] + '">Delete</a></td>';
             } else {
                 tr_string += '<td>&nbsp;</td>';
             }
@@ -368,6 +368,21 @@
                         obj = $.parseJSON(data);
                         if(obj['status'] == 'OK'){
                             refresh_build_sources_list();
+                        } else {
+                            alert(obj['message']);
+                        }
+
+                    });
+                return false;
+                
+            });
+            $(document).on("click", ".delete_package_build", function(){
+                var build_source_id = $(this).attr("rel");
+                $.get('/en-US/delete_package_build/' + build_source_id + '/',
+                    function(data){
+                        obj = $.parseJSON(data);
+                        if(obj['status'] == 'OK'){
+                            refresh_package_builds_list();
                         } else {
                             alert(obj['message']);
                         }
@@ -565,7 +580,7 @@
                 return false;
             });
 
-            $(".view_build_logs").click(function(){
+            $(document).on('click', ".view_build_logs", function(){
                 var id = $(this).attr('rel');
                 var logs_content = $.get('/en-US/package_build_logs/' + id + '/',
                     function(data){

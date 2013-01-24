@@ -88,6 +88,19 @@ def build_from_build_source(request, id):
 
     return HttpResponse(json.dumps(return_dict))
 
+def delete_package_build(request, id):
+    return_dict = {}
+    return_dict['status'] = 'OK'
+    try:
+        build_source = models.MozillaPackageBuild.objects.get(id=id)
+        build_source.delete()
+        return_dict['message'] = 'Build Package Deleted'
+    except models.MozillaPackageBuild.DoesNotExist:
+        return_dict['status'] = 'FAIL'
+        return_dict['message'] = 'Could not find Build Package with id: %s' % id
+
+
+    return HttpResponse(json.dumps(return_dict))
 def delete_build_source(request, id):
     return_dict = {}
     return_dict['status'] = 'OK'
@@ -162,7 +175,7 @@ def get_package_builds(request, id):
             tmp['build_source'] = package.build_source.remote_package_name
         else:
             tmp['build_source_type'] = 'Uploaded File'
-            tmp['build_source'] = package.build_source.build_source_file
+            tmp['build_source'] = str(package.build_source.build_source_file.source_file).replace("uploads/", "")
             
         tmp['build_status'] = package.build_status
         """tmp['build_source_type'] = source.build_type
