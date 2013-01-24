@@ -110,16 +110,21 @@
                                     <th>Action</th>
                                 </tr>
                             {% for package_build in instance.mozillapackagebuild_set.all() %}
+                                <tbody id='package_builds_tbody'>
+                                    <tr class='package_builds_list'>
+                                        <td>{{ package_build.build_package_name }}</td>
+                                        {% if package_build.build_source.build_type == 'gem' or
+                                            package_build.build_source.build_type == 'python' %}
+                                            <td>{{ package_build.build_source.remote_package_name }}</td>
+                                        {% endif %}
+                                        <td>{{ package_build.build_source.build_type }}</td>
+                                        <td>{{ package_build.build_status }}</td>
+                                        <td><a href="#" class='view_build_logs' rel='{{ package_build.id }}'>View</a></td>
+                                        <td>{% if package_build.build_status == 'Completed' %}<a href="{{'frontend.download'|url(package_build.id) }}" class='' rel='3'>Download</a> | <a href="#" class='' rel='3'>Delete</a> {% else %} &nbsp; {% endif %}</td>
+                                    </tr>
+                                </tbody>
 
                             {% endfor %}
-                                <tr>
-                                    <td>foo-bar-1.0.39.rpm</td>
-                                    <td><a href="#">source-file-1.0.1.src.rpm</a></td>
-                                    <td>Source RPM</td>
-                                    <td>Completed</td>
-                                    <td><a href="#" class='view_build_log' rel='3'>View</a></td>
-                                    <td><a href="#" class='' rel='3'>Download</a> | <a href="#" class='' rel='3'>Delete</a></td>
-                                </tr>
                             </table>
                         </li>
                         <li id="buildsourcesTab">
@@ -230,7 +235,6 @@
                     jQuery("#rhel_version_label").show();
                     jQuery("#id_upload_package").hide();
                     jQuery("#upload_package_label").hide();
-                    //$("#id_install_package_name").attr('disabled', 'disabled');
         }
         function add_dependency(){
             var add_string = '<div class="dep_wrapper" style="clear: both;"><label>Dependency:</label>';
@@ -256,6 +260,22 @@
             $("#build_sources_tbody").after(tr_string);
 
         }
+        function append_package_builds(element, index, array){
+            tr_string = '<tr class="package_builds_list">';
+            tr_string += '<td>' + element['name'] + '</td>';
+            tr_string += '<td>' + element['build_source'] + '</td>';
+            tr_string += '<td>' + element['build_source_type'] + '</td>';
+            tr_string += '<td>' + element['build_status'] + '</td>';
+            tr_string += '<td><a href="#" class="view_build_logs" rel="' + element['id'] + '">View</a></td>';
+            if(element['build_status'] == 'Completed'){
+                tr_string += '<td><a href="/en-US/download/' + element['id'] + '/" class="" rel="' + element['id'] + '">Download</a> | <a href="#" class="" rel="3">Delete</a></td>';
+            } else {
+                tr_string += '<td>&nbsp;</td>';
+            }
+            tr_string += '</tr>';
+            $("#package_builds_tbody").after(tr_string);
+
+        }
         function refresh_build_sources_list(){
             $.get('/get_build_sources/' + package_id + '/',
                     function(data){
@@ -263,6 +283,22 @@
                         obj = $.parseJSON(data);
                         if(obj['status'] == 'OK'){
                             obj['sources'].forEach(append_build_source);
+                        } else {
+                            alert('Refresh Failed: ' + obj['message']);
+
+                        }
+
+                    }
+            );
+            return true;
+        }
+        function refresh_package_builds_list(){
+            $.get('/get_package_builds/' + package_id + '/',
+                    function(data){
+                        $(".package_builds_list").remove();
+                        obj = $.parseJSON(data);
+                        if(obj['status'] == 'OK'){
+                            obj['package_builds'].forEach(append_package_builds);
                         } else {
                             alert('Refresh Failed: ' + obj['message']);
 
@@ -284,7 +320,6 @@
 
         function add_build_source(json_string){
             refresh_build_sources_list();
-            console.log(json_string);
 
         }
         $(document).ready(function(){
@@ -348,7 +383,9 @@
                                     function(data){
                                         var obj = $.parseJSON(data);
                                             if(obj['status'] == 'OK'){
-                                                alert("Build Started");
+                                                $("a[href=#packagebuilds]").click();
+                                                refresh_package_builds_list();
+                                                setInterval('refresh_package_builds_list()', 30000);
                                             } else {
                                                 alert('Build Failed: ' + obj['message']);
 

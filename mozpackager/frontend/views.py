@@ -130,6 +130,46 @@ def get_build_sources(request, id):
 
     return HttpResponse(json.dumps(return_dict))
 
+def get_package_builds(request, id):
+    return_dict = {}
+    try:
+        mozilla_package = models.MozillaPackage.objects.get(id=id)
+    except models.MozillaPackage.DoesNotExist:
+        return_dict['status'] = 'FAIL'
+        return_dict['message'] = 'Could not find Mozilla Package with id:%s' % id
+        return HttpResponse(json.dumps(return_dict))
+    return_dict['status'] = 'OK'
+    return_dict['package_builds'] = []
+    for package in mozilla_package.mozillapackagebuild_set.all().order_by('-id'):
+        tmp = {}
+        tmp['id'] = package.id
+        if package.build_package_name:
+            tmp['name'] = package.build_package_name
+        else:
+            tmp['name'] = ''
+        if package.build_source.build_type == 'gem' or package.build_source.build_type == 'python':
+            tmp['build_source_type'] = package.build_source.build_type
+            tmp['build_source'] = package.build_source.remote_package_name
+        else:
+            tmp['build_source_type'] = 'Uploaded File'
+            tmp['build_source'] = package.build_source.build_source_file
+            
+        tmp['build_status'] = package.build_status
+        """tmp['build_source_type'] = source.build_type
+        tmp['build_source'] = source.remote_package_name
+        tmp['system_dependencies'] = source.system_dependency_string
+        tmp['package_dependencies'] = source.package_dependency_string
+        tmp['remote_package_name'] = source.remote_package_name
+        tmp['get_build_url'] = source.get_build_url()
+        tmp['get_delete_url'] = source.get_delete_url()
+        if source.build_source_file:
+            tmp['build_source_file_name'] = str(source.build_source_file.source_file).replace("uploads/", "")
+        else:
+            tmp['build_source_file_name'] = ''"""
+        return_dict['package_builds'].append(tmp)
+
+    return HttpResponse(json.dumps(return_dict))
+
 @csrf_exempt
 def add_build_source(request, id):
     response_obj = {}
@@ -197,21 +237,6 @@ def edit(request, id):
             up.save()
             package_upload_form.save()
 
-        #dependencies = request.POST.getlist('dependency')
-        #if form.is_valid():
-        #    mozilla_package = form.save()
-        #    instance.mozillapackagedependency_set.all().delete()
-        #    if dependencies:
-        #        for dep in dependencies:
-        #            if dep != '':
-        #                models.MozillaPackageDependency(
-        #                        mozilla_package = form.instance,
-        #                        name = dep,
-        #                        ).save()
-        #    moz_package = MozPackage(request)
-        #    form.process(moz_package)
-        #    return HttpResponseRedirect(reverse('frontend.create'))
-        #form = forms.PackageForm(request.POST, request.FILES)
     else:
         #form = forms.PackageForm(instance=instance)
         package_upload_form = forms.SourcePackageUploadForm(prefix='package-upload')
@@ -360,7 +385,7 @@ def fix_markup(markup):
 
 def serve_file(request, id):
 
-    moz_package = get_object_or_404(models.MozillaPackage, id=id)
+    moz_package = get_object_or_404(models.MozillaPackageBuild, id=id)
     filename = moz_package.build_package_name
     fullname = "%s/%s" % (BUILD_DIR, filename)
     try:
