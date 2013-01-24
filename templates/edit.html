@@ -67,6 +67,17 @@
     div.error {
         color: red;
     }
+    div.log_output_header {
+        font-weight: bold;
+        clear: both;
+        margin-bottom: 5px; 
+    }
+    div.log_output_content {
+        border-bottom: solid 1px gray;
+        margin-bottom: 5px; 
+        padding: 5px;
+    }
+
 </style>
 
 
@@ -554,9 +565,39 @@
                 return false;
             });
 
+            $(".view_build_logs").click(function(){
+                var id = $(this).attr('rel');
+                var logs_content = $.get('/en-US/package_build_logs/' + id + '/',
+                    function(data){
+                        $("#logs_dialog_content").html(data);
+                        $("#logs_dialog").dialog({
+                            title: 'Build Logs',
+                            width: 620,
+                            height: 620,
+                            buttons: [
+                                {
+                                    text: 'Close',
+                                    click: function(){
+                                        $("#logs_dialog").dialog('close');
+                                    }
+                                }
+
+                            ]
+                            
+                            
+                        });
+                    });
+
+                return false;
+
+            });
+
 
         });
 </script>
+<div id='logs_dialog' style='display: none;'>
+    <div id='logs_dialog_content'></div>
+</div>
 <div id='build_source_form_div' style='display: none;'>
     <table>
         <form>

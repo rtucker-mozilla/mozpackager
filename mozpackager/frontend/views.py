@@ -129,7 +129,17 @@ def get_build_sources(request, id):
         return_dict['sources'].append(tmp)
 
     return HttpResponse(json.dumps(return_dict))
+def package_build_logs(request, id):
+    mozilla_build_package = models.MozillaPackageBuild.objects.get(id=id)
+    log_output = ''
+    logs = mozilla_build_package.mozillapackagelog_set.all()
+    for log in logs:
+        log_output += "<div class='log_output_header'>%s</div>" % log.log_type
+        log_output += "<div class='log_output_content'>%s</div>" % log.log_message.replace('\n', '<br />')
 
+    return HttpResponse(log_output)
+
+    return HttpResponse('asdfasdfsdf');
 def get_package_builds(request, id):
     return_dict = {}
     try:
