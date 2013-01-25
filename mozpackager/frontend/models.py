@@ -135,7 +135,7 @@ class MozillaPackageBuild(models.Model):
     @property
     def input_type(self):
         if self.build_source.build_type:
-            self.build_source.build_type
+            return self.build_source.build_type
         elif self.build_source.build_source_file.source_file:
             source_filename = str(self.build_source.build_source_file.source_file).replace('uploads/', '')
             if '.tar.gz' in source_filename:
