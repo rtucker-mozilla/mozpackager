@@ -54,8 +54,7 @@
                         <td>{{ package.release }}</td>
                         <td>{{ package.vendor }}</td>
                         <td>
-                                <a href="{{ "frontend.detail"|url(package.id) }}">Details</a>&nbsp;
-                                <a href="{{ "frontend.edit"|url(package.id) }}">Edit</a>&nbsp;
+                                <a href="{{ "frontend.edit"|url(package.id) }}">Edit</a>
                         </td>
                     </tr>
                     {% endfor %}
