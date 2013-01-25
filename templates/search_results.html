@@ -33,10 +33,6 @@
                 <tr>
                     <th>Created On</th>
                     <th>Package Name</th>
-                    <th>Architecture</th>
-                    <th>Input Type</th>
-                    <th>Output Type</th>
-                    <th>Build Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -50,20 +46,8 @@
                         <tr>
                     {% endif %}
                         <td>{{ package.created_on }}</td>
-                        <td>{{ package.package }}</td>
-                        <td>{{ package.arch_type }}</td>
-                        <td>{{ package.input_type }}</td>
-                        <td>{{ package.output_type }}</td>
-                        <td>{{ package.build_status }}</td>
-                        <td>
-                            {% if package.build_status == 'Completed' %}
-                                <a href="{{ "frontend.detail"|url(package.id) }}">Details</a>&nbsp;
-                                <a href="{{ "frontend.download"|url(package.id) }}">Download</a>
-                            {% else %}
-                            <!--<a style='color: black;' href="{{ "frontend.detail"|url(package.id) }}">Details</a>&nbsp;-->
-                                <a href="{{ "frontend.detail"|url(package.id) }}">Details</a>&nbsp;
-
-                            {% endif %}
+                        <td>{{ package.name }}</td>
+                        <td><a href="{{ "frontend.edit"|url(package.id) }}">Edit</a>&nbsp;</td>
                         </td>
                     </tr>
                     {% endfor %}

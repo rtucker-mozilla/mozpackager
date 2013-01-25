@@ -93,6 +93,10 @@ class MozillaPackage(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    search_fields = (
+            'name',
+        )
+
     class Meta:
         db_table = 'mozilla_package'
         unique_together = (
@@ -127,10 +131,6 @@ class MozillaPackageBuild(models.Model):
     provides = models.CharField(max_length=128)
     prefix_dir = models.CharField(max_length=128)
     celery_id = models.CharField(max_length=128, null=True, blank=True)
-    search_fields = (
-            'arch_type',
-            'package'
-        )
 
     @property
     def input_type(self):
