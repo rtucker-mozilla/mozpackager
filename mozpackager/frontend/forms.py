@@ -2,6 +2,7 @@ from django import forms
 import models
 from tasks import build_mock_environment
 from mozpackager.MozPackager import MozPackage
+from mozpackager.settings.local import MEDIA_PATH
 def handle_uploaded_file(f, path = None):
     if not path:
         path = '/tmp/'
@@ -98,7 +99,7 @@ class SourcePackageUploadForm(forms.Form):
 
     def save(self, *args, **kwargs):
         cleaned_data = super(SourcePackageUploadForm, self).clean()
-        handle_uploaded_file(cleaned_data['source_file'], path='/home/rtucker/mozpackager/media/uploads')
+        handle_uploaded_file(cleaned_data['source_file'], path=MEDIA_PATH)
 
 class PackageForm(forms.ModelForm):
     arch_type = forms.ChoiceField(
