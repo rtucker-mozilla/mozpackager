@@ -120,6 +120,7 @@ class MozillaPackageBuild(models.Model):
     build_package_name = models.CharField(max_length=128, blank=True, null=True)
     build_status = models.CharField(max_length=128, blank=True, null=True)
     rhel_version = models.CharField(max_length=128)
+    is_signed = models.BooleanField(default=False)
     """
         package has the label Remote Package
     """
