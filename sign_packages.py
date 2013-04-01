@@ -8,7 +8,10 @@ import manage
 from mozpackager.settings import BUILD_SCRIPTS, BUILD_DIR
 import mozpackager.frontend.models as models
 SIGN_SCRIPT = 'sign_package.sh'
-all_unsigned_packages = models.MozillaPackageBuild.objects.filter(is_signed=False)
+all_unsigned_packages = models.MozillaPackageBuild.objects.filter(
+        is_signed=False,
+        build_status='Completed',
+        )
 for unsigned_package in all_unsigned_packages:
     if unsigned_package.build_package_name:
         sign_command = os.path.join(BUILD_SCRIPTS, SIGN_SCRIPT)
@@ -26,9 +29,9 @@ for unsigned_package in all_unsigned_packages:
             resp = json.loads(output)
             unsigned_package.add_log(
                     'SIGNING',
-                    "STATUS: %s\n%s" % (resp['status'], resp['message'])
+                    "STATUS: %s\n%s" % (resp['success'], resp['message'])
                     )
-            if resp['status'] == 'SUCCESS':
+            if resp['success'] == 'OK':
                 unsigned_package.is_signed = True
                 unsigned_package.save()
         except:
@@ -36,3 +39,4 @@ for unsigned_package in all_unsigned_packages:
                     'SIGNING',
                     "STATUS: FAILURE\n Unable to parse json response"
                     )
+sys.exit(0)
