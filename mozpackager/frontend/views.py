@@ -178,6 +178,7 @@ def get_package_builds(request, id):
             tmp['build_source'] = str(package.build_source.build_source_file.source_file).replace("uploads/", "")
             
         tmp['build_status'] = package.build_status
+        tmp['is_signed'] = package.is_signed
         """tmp['build_source_type'] = source.build_type
         tmp['build_source'] = source.remote_package_name
         tmp['system_dependencies'] = source.system_dependency_string
