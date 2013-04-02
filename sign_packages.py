@@ -27,7 +27,7 @@ for unsigned_package in all_unsigned_packages:
             stderr=subprocess.PIPE)                                                                                                                                                                   
         output, errors = p.communicate()
         try:
-            resp = json.loads(output)
+            resp = json.loads(output.split("=====")[1])
             unsigned_package.add_log(
                     'SIGNING',
                     "STATUS: %s\n%s" % (resp['success'], resp['message'])

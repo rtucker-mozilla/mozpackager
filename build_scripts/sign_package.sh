@@ -51,7 +51,7 @@ case $FILETYPE in
             rm -rf $DEB_BUILD_DIR
         
         fi 
-        echo '{"success": "'$response_status'", "message":"'$message'"}'
+        echo '====={"success": "'$response_status'", "message":"'$message'"}'
         ;; 
     'rpm' )
         /home/mozpackager_sign/rpmsign.exp $FILENAME 2>&1
@@ -59,11 +59,11 @@ case $FILETYPE in
             message='Unable to sign RPM'
             response_status='FAILED'
         fi 
-        echo '{"success": "'$response_status'", "message":"'$message'"}'
+        echo '====={"success": "'$response_status'", "message":"'$message'"}'
         ;; 
     * )
         message='Unknown File Type'
         response_status='FAILED'
-        echo '{"success": "'$response_status'", "message":"'$message'"}'
+        echo '====={"success": "'$response_status'", "message":"'$message'"}'
         exit 2;;
 esac
