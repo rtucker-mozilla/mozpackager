@@ -47,7 +47,7 @@ case $FILETYPE in
                 response_status='FAILED'
             fi
             ar rc $FILENAME debian-binary control.tar.gz data.tar.gz _gpgorigin
-            mv $FILENAME $WORKING_DIR/
+            mv $FILENAME $WORKING_DIR/../package_builds/
             rm -rf $DEB_BUILD_DIR
         
         fi 
