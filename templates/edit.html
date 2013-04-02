@@ -279,6 +279,7 @@
             tr_string += '<td>' + element['build_source'] + '</td>';
             tr_string += '<td>' + element['build_source_type'] + '</td>';
             tr_string += '<td>' + element['build_status'] + '</td>';
+            tr_string += '<td>' + element['is_signed'] + '</td>';
             tr_string += '<td><a href="#" class="view_build_logs" rel="' + element['id'] + '">View</a></td>';
             if(element['build_status'] == 'Completed' || element['build_status'] == 'Failed'){
                 tr_string += '<td><a href="/en-US/download/' + element['id'] + '/" class="" rel="' + element['id'] + '">Download</a> | <a href="#" class="delete_package_build" rel="' + element['id'] + '">Delete</a></td>';
