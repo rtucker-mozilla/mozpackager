@@ -117,6 +117,7 @@
                                     <th>Build Source</th>
                                     <th>Build Source Type</th>
                                     <th>Build Status</th>
+                                    <th>Signed</th>
                                     <th>Logs</th>
                                     <th>Action</th>
                                 </tr>
@@ -130,6 +131,7 @@
                                         {% endif %}
                                         <td>{{ package_build.build_source.build_type }}</td>
                                         <td>{{ package_build.build_status }}</td>
+                                        <td>{% if package_build.is_signed == 0 %}No{% else %}Yes{% endif %}</td>
                                         <td><a href="#" class='view_build_logs' rel='{{ package_build.id }}'>View</a></td>
                                         <td>{% if package_build.build_status == 'Completed'  or package_build.build_status == 'Failed' %}<a href="{{'frontend.download'|url(package_build.id) }}" class='' rel='{{ package_build.id }}'>Download</a> | <a href="#" class='delete_package_build' rel='{{ package_build.id }}'>Delete</a> {% else %} &nbsp; {% endif %}</td>
                                     </tr>
